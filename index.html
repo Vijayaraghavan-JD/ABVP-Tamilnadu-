@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akhil Bharatiya Vidyarthi Parishad (ABVP) Tamil Nadu</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo-area">
+                <img src="assets/logo.png" alt="ABVP Logo" class="nav-logo">
+                <span class="nav-brand">Akhil Bharatiya Vidyarthi Parishad - Tamilnadu </span>
+            </div>
+            
+            <div class="mobile-menu-btn" id="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#about">About Us</a></li>
+                <li><a href="#inspiration">Our Inspiration</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+                <li><a href="#help">Help</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content Area (Hidden When Card Shows) -->
+    <main id="main-content">
+        <!-- Hero Section -->
+        <section class="hero" id="home">
+            <div class="carousel-container" id="carousel">
+                <div class="carousel-slide active" style="background-image: url('assets/slide1.jpg');"></div>
+                <!-- Some uploaded slides might be missing, reuse slides for now -->
+                <div class="carousel-slide" style="background-image: url('assets/slide2.jpg');"></div>
+                <div class="carousel-slide" style="background-image: url('assets/slide3.jpg');"></div>
+                <div class="carousel-slide" style="background-image: url('assets/slide1.jpg');"></div>
+                <div class="carousel-overlay"></div>
+            </div>
+
+            <div class="hero-content">
+                <h1 class="hero-title">Join ABVP</h1>
+                <p class="hero-subtitle">Empowering Students, Building Nation</p>
+                <a href="#registration" class="btn btn-primary" id="scroll-to-join">Join ABVP</a>
+            </div>
+        </section>
+
+        <!-- Registration Form Section -->
+        <section id="registration" class="registration-section section-padding">
+            <div class="container">
+                <div class="form-card">
+                    <h2 class="section-title">Membership Registration</h2>
+                    
+                    <form id="membership-form">
+                        <div class="form-grid">
+                            <!-- Left Column: Details -->
+                            <div class="form-column">
+                                <div class="form-group">
+                                    <label for="fullName">Full Name *</label>
+                                    <input type="text" id="fullName" name="fullName" required placeholder="Enter your full name">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="institutionType">School / College *</label>
+                                    <select id="institutionType" name="institutionType" required>
+                                        <option value="" disabled selected>Select Category</option>
+                                        <option value="school">School</option>
+                                        <option value="college">College</option>
+                                        <option value="teacher">Teacher</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="district">District *</label>
+                                    <input type="text" id="district" name="district" required placeholder="Enter your district">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="email">Email Address *</label>
+                                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="gender">Gender *</label>
+                                    <select id="gender" name="gender" required>
+                                        <option value="" disabled selected>Select Gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bloodGroup">Blood Group</label>
+                                    <input type="text" id="bloodGroup" name="bloodGroup" placeholder="e.g., O+">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="phone">Phone Number *</label>
+                                    <input type="tel" id="phone" name="phone" required placeholder="Enter mobile number" pattern="[0-9]{10}">
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column: Photo & Payment -->
+                            <div class="form-column">
+                                <div class="form-group">
+                                    <label>Upload Photo *</label>
+                                    <div class="photo-upload-area" id="photo-upload-area">
+                                        <input type="file" id="photoInput" name="photo" accept="image/*" required>
+                                        <div class="upload-placeholder">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                            <span>Click to upload photo</span>
+                                        </div>
+                                        <img id="photoPreview" src="" alt="Photo Preview" class="photo-preview hidden">
+                                    </div>
+                                </div>
+                                
+                                <div class="payment-card">
+                                    <h3>Payment Details</h3>
+                                    <div class="fee-display">
+                                        <span class="fee-label">Membership Fee:</span>
+                                        <span class="fee-amount" id="fee-amount">₹0</span>
+                                    </div>
+                                    
+                                    <div class="qr-container" id="qr-container">
+                                        <p class="payment-instruction">Scan and Pay using UPI</p>
+                                        <div class="qr-wrapper">
+                                            <img src="assets/qr-code.png.jpeg" alt="UPI QR Code" class="qr-code">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" id="paymentConfirm" name="paymentConfirm">
+                                        <label for="paymentConfirm">I completed payment</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary submit-btn" id="submit-btn" disabled>Join ABVP</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Placeholder Sections --><section id="about" class="section-padding bg-light">
+    <div class="container">
+        <h2 class="section-title">About Us</h2>
+
+        <div class="about-box">
+            <p>
+                Akhil Bharatiya Vidyarthi Parishad (ABVP) is India's largest student organization,
+                committed to empowering students and building a strong nation. We stand for student
+                rights, quality education, and social welfare.
+            </p>
+
+            <p>
+                ABVP Tamil Nadu works tirelessly to address student issues, promote educational
+                reforms, and create opportunities for youth leadership. We believe in the power of
+                students to transform society and create a brighter future for all.
+            </p>
+        </div>
+    </div>
+</section>
+       <section id="inspiration" class="section-padding">
+    <div class="container">
+        <h2 class="section-title">Our Inspiration</h2>
+
+        <div class="inspiration-grid">
+
+            <!-- Vivekananda -->
+            <div class="inspiration-card">
+                <img src="assets/vivekananda.jpg" class="insp-img">
+                <p>
+                    “Arise, awake and stop not till the goal is reached.”
+                    Swami Vivekananda inspired youth to build strength, character,
+                    and serve the nation with dedication.
+                </p>
+            </div>
+
+            <!-- Second Image -->
+            <div class="inspiration-card">
+                <img src="assets/your-image.jpg" class="insp-img">
+                <p>
+                    (Ithu nee kuduka pora content inga replace panniko)
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+        <section id="contact" class="section-padding contact-section">
+    <div class="container">
+        <h2 class="section-title text-white">Contact Us</h2>
+
+        <div class="contact-grid">
+
+            <!-- Left -->
+            <div class="contact-card">
+                <h3>Get in Touch</h3>
+
+                <p><strong>Phone:</strong><br>
+                +91 944402038<br>
+                +91 9363281119</p>
+
+                <p><strong>Email:</strong><br>
+                abvpntn1949@gmail.com<br>
+                abvpsouthtamilnadu@gmail.com</p>
+            </div>
+
+            <!-- Right -->
+            <div class="contact-card">
+                <h3>Office Address</h3>
+
+                <p>
+                    Seva No.79,<br>
+                    Dr Alagappa Road,<br>
+                    Purasaiwakkam,<br>
+                    Chennai - 600084
+                </p>
+
+                <p>
+                    4A Srinivasa Perumal Kovil Street,<br>
+                    Munichalai,<br>
+                    Madurai - 625009
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+        <section id="help" class="section-padding hidden">
+            <div class="container"><h2 class="section-title">Help</h2></div>
+        </section>
+        
+    </main>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <div class="toast-content">
+            <div class="success-icon">✓</div>
+            <p>You have successfully joined ABVP Tamil Nadu</p>
+        </div>
+    </div>
+
+    <!-- Membership Card Page (Hidden initially) -->
+    <div id="card-view" class="card-view hidden">
+        <div class="container card-view-container">
+            <h2 class="section-title text-white">Your Membership Card</h2>
+            
+            <div class="membership-card-wrapper" id="membership-card-render">
+                <!-- Card Background -->
+                <div class="card-bg">
+                    <img src="assets/membership-bg.jpg.jpeg" alt="Card Background">
+                </div>
+                
+                <!-- Card Content Overlay -->
+                <!-- Positioning will be configured via CSS to match the background design -->
+                <div class="card-content-overlay">
+                    <div class="card-photo-wrapper">
+                        <img id="card-photo" src="" alt="Member Photo">
+                    </div>
+                    
+                    <div class="card-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Name:</span>
+                            <span class="detail-value text-capitalize" id="card-name"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Institution:</span>
+                            <span class="detail-value text-capitalize" id="card-institution"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">District:</span>
+                            <span class="detail-value text-capitalize" id="card-district"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Email:</span>
+                            <span class="detail-value" id="card-email"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Gender:</span>
+                            <span class="detail-value text-capitalize" id="card-gender"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Blood Grp:</span>
+                            <span class="detail-value" id="card-blood"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Phone:</span>
+                            <span class="detail-value" id="card-phone"></span>
+                        </div>
+                        <!-- ID NO could be auto-generated -->
+                        <div class="detail-row id-row">
+                            <span class="detail-label">ID NO:</span>
+                            <span class="detail-value font-bold" id="card-id"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-actions">
+                <button id="download-btn" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Download Membership Card
+                </button>
+                <button id="return-btn" class="btn btn-outline">Return to Home</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p>&copy; <span id="year"></span> Akhil Bharatiya Vidyarthi Parishad, Tamil Nadu. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- html2canvas for card download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
