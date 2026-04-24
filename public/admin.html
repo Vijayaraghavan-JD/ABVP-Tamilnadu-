@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — ABVP Tamil Nadu</title>
+    <meta name="description" content="ABVP Tamil Nadu Admin Dashboard — Manage member registrations, approvals, and analytics.">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         LOGIN SCREEN
+         ═══════════════════════════════════════════════════════════ -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+
+        <div class="login-card">
+            <div class="login-logo">
+                <img src="assets/logo.png" alt="ABVP Logo">
+            </div>
+            <h1>Admin Portal</h1>
+            <p>Akhil Bharatiya Vidyarthi Parishad — Tamil Nadu</p>
+
+            <button id="google-signin-btn" class="google-signin-btn" onclick="signInWithGoogle()">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Sign in with Google
+            </button>
+
+            <div id="login-error" class="login-error hidden"></div>
+            <div id="login-loading" class="login-loading hidden">
+                <div class="spinner-sm"></div>
+                <span>Verifying access...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         DASHBOARD
+         ═══════════════════════════════════════════════════════════ -->
+    <div id="dashboard" class="dashboard hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="assets/logo.png" alt="ABVP" class="sidebar-logo">
+                <h2>ABVP Admin</h2>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview" onclick="switchSection('overview', this)">
+                    <span class="nav-icon">📊</span>
+                    <span>Overview</span>
+                </a>
+                <a href="#" class="nav-item" data-section="members" onclick="switchSection('members', this)">
+                    <span class="nav-icon">👥</span>
+                    <span>Members</span>
+                </a>
+                <a href="#" class="nav-item" data-section="pending" onclick="switchSection('pending', this)">
+                    <span class="nav-icon">⏳</span>
+                    <span>Pending</span>
+                    <span class="nav-badge" id="pending-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-section="admin-mgmt" onclick="switchSection('admin-mgmt', this)" id="admin-mgmt-nav" style="display:none;">
+                    <span class="nav-icon">🔐</span>
+                    <span>Manage Admins</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-info">
+                    <img id="admin-avatar" src="" alt="Admin" class="admin-avatar">
+                    <div>
+                        <p id="admin-name" class="admin-name">Admin</p>
+                        <p id="admin-role" class="admin-role">admin</p>
+                    </div>
+                </div>
+                <button class="signout-btn" onclick="signOutAdmin()">Sign Out</button>
+            </div>
+        </aside>
+
+        <!-- Mobile Top Bar -->
+        <div class="mobile-topbar">
+            <button class="mobile-sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <span>ABVP Admin</span>
+            <button class="signout-btn-mobile" onclick="signOutAdmin()">↪</button>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="dashboard-main" id="dashboard-main">
+
+            <!-- ── Overview Section ──────────────────────────────── -->
+            <section id="section-overview" class="dashboard-section">
+                <h1 class="page-title">Dashboard Overview</h1>
+
+                <div class="analytics-grid">
+                    <div class="analytics-card card-total">
+                        <div class="analytics-icon">📋</div>
+                        <div class="analytics-info">
+                            <h3 id="stat-total">0</h3>
+                            <p>Total Registrations</p>
+                        </div>
+                    </div>
+                    <div class="analytics-card card-pending">
+                        <div class="analytics-icon">⏳</div>
+                        <div class="analytics-info">
+                            <h3 id="stat-pending">0</h3>
+                            <p>Pending Review</p>
+                        </div>
+                    </div>
+                    <div class="analytics-card card-active">
+                        <div class="analytics-icon">✅</div>
+                        <div class="analytics-info">
+                            <h3 id="stat-active">0</h3>
+                            <p>Active Members</p>
+                        </div>
+                    </div>
+                    <div class="analytics-card card-rejected">
+                        <div class="analytics-icon">❌</div>
+                        <div class="analytics-info">
+                            <h3 id="stat-rejected">0</h3>
+                            <p>Rejected</p>
+                        </div>
+                    </div>
+                    <div class="analytics-card card-revenue">
+                        <div class="analytics-icon">💰</div>
+                        <div class="analytics-info">
+                            <h3 id="stat-revenue">₹0</h3>
+                            <p>Total Revenue (Active)</p>
+                        </div>
+                    </div>
+                    <div class="analytics-card card-gender">
+                        <div class="analytics-icon">📈</div>
+                        <div class="analytics-info">
+                            <h3 id="stat-gender-ratio">-</h3>
+                            <p>Male / Female / Other</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Registrations -->
+                <div class="section-card">
+                    <h2 class="section-card-title">Recent Registrations</h2>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-table-body">
+                                <tr><td colspan="5" class="empty-row">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Members Section ───────────────────────────────── -->
+            <section id="section-members" class="dashboard-section hidden">
+                <h1 class="page-title">All Members</h1>
+
+                <div class="filters-bar">
+                    <input type="text" id="search-members" placeholder="Search by name, email, or district..." class="filter-input">
+                    <select id="filter-status" class="filter-select">
+                        <option value="all">All Status</option>
+                        <option value="pending_review">Pending</option>
+                        <option value="active">Active</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <select id="filter-type" class="filter-select">
+                        <option value="all">All Types</option>
+                        <option value="school">School</option>
+                        <option value="college">College</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                    <button class="btn-export" onclick="exportCSV()">📥 Export CSV</button>
+                </div>
+
+                <div class="section-card">
+                    <div class="table-wrapper">
+                        <table class="data-table" id="members-table">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Type</th>
+                                    <th>District</th>
+                                    <th>Payment Ref</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="members-table-body">
+                                <tr><td colspan="9" class="empty-row">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Pending Section ───────────────────────────────── -->
+            <section id="section-pending" class="dashboard-section hidden">
+                <h1 class="page-title">Pending Approvals</h1>
+
+                <div id="pending-list" class="pending-list">
+                    <div class="empty-state">
+                        <p>Loading pending registrations...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Admin Management Section ──────────────────────── -->
+            <section id="section-admin-mgmt" class="dashboard-section hidden">
+                <h1 class="page-title">Manage Admins</h1>
+
+                <div class="section-card">
+                    <h2 class="section-card-title">Add New Admin</h2>
+                    <div class="add-admin-form">
+                        <input type="email" id="new-admin-email" placeholder="Enter admin's Google email" class="filter-input">
+                        <select id="new-admin-role" class="filter-select">
+                            <option value="admin">Admin</option>
+                            <option value="super_admin">Super Admin</option>
+                        </select>
+                        <button class="btn-action btn-approve" onclick="addNewAdmin()">Add Admin</button>
+                    </div>
+                </div>
+
+                <div class="section-card" style="margin-top: 20px;">
+                    <h2 class="section-card-title">Current Admins</h2>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Added By</th>
+                                    <th>Added On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admins-table-body">
+                                <tr><td colspan="5" class="empty-row">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MEMBER DETAIL MODAL
+         ═══════════════════════════════════════════════════════════ -->
+    <div id="member-modal" class="modal-overlay hidden" onclick="closeMemberModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeMemberModal()">&times;</button>
+            
+            <div class="modal-header">
+                <img id="modal-photo" src="" alt="Member Photo" class="modal-photo">
+                <div>
+                    <h2 id="modal-name"></h2>
+                    <span id="modal-status-badge" class="status-badge"></span>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="modal-info-grid">
+                    <div class="modal-info-item">
+                        <span class="mil">Email</span>
+                        <span class="miv" id="modal-email"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="mil">Phone</span>
+                        <span class="miv" id="modal-phone"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="mil">Institution Type</span>
+                        <span class="miv" id="modal-institution"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="mil">District</span>
+                        <span class="miv" id="modal-district"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="mil">Gender</span>
+                        <span class="miv" id="modal-gender"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="mil">Blood Group</span>
+                        <span class="miv" id="modal-blood"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="mil">Fee Amount</span>
+                        <span class="miv" id="modal-fee"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="mil">Payment Reference</span>
+                        <span class="miv" id="modal-payment-ref"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="mil">Registered On</span>
+                        <span class="miv" id="modal-created"></span>
+                    </div>
+                    <div class="modal-info-item" id="modal-membership-id-row">
+                        <span class="mil">Membership ID</span>
+                        <span class="miv" id="modal-membership-id"></span>
+                    </div>
+                    <div class="modal-info-item" id="modal-reviewed-row">
+                        <span class="mil">Reviewed By</span>
+                        <span class="miv" id="modal-reviewed-by"></span>
+                    </div>
+                    <div class="modal-info-item" id="modal-rejection-row">
+                        <span class="mil">Rejection Reason</span>
+                        <span class="miv" id="modal-rejection-reason"></span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons (only for pending) -->
+                <div id="modal-actions" class="modal-actions hidden">
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label for="rejection-reason" style="font-weight:500; font-size:0.9rem;">Notes / Rejection Reason (optional):</label>
+                        <textarea id="rejection-reason" class="modal-textarea" placeholder="Enter reason if rejecting..."></textarea>
+                    </div>
+                    <div class="modal-action-btns">
+                        <button class="btn-action btn-approve" id="btn-approve-member" onclick="approveMember()">
+                            ✓ Approve & Activate
+                        </button>
+                        <button class="btn-action btn-reject" id="btn-reject-member" onclick="rejectMember()">
+                            ✕ Reject
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="admin-toast" class="admin-toast hidden">
+        <p id="admin-toast-msg"></p>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

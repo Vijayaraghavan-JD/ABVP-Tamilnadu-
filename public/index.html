@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Akhil Bharatiya Vidyarthi Parishad (ABVP) Tamil Nadu</title>
+    <meta name="description" content="Join ABVP Tamil Nadu — India's largest student organization. Register for membership, check your status, and get your digital membership card.">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/logo.png">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -28,10 +31,19 @@
                 <li><a href="#about">About Us</a></li>
                 <li><a href="#inspiration">Our Inspiration</a></li>
                 <li><a href="#contact">Contact Us</a></li>
-                <li><a href="#help">Help</a></li>
+                <li><a href="#status-check">Check Status</a></li>
+                <li><a href="admin.html" class="nav-admin-link">Admin</a></li>
             </ul>
         </div>
     </nav>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p id="loading-text">Submitting your registration...</p>
+        </div>
+    </div>
 
     <!-- Main Content Area (Hidden When Card Shows) -->
     <main id="main-content">
@@ -135,20 +147,41 @@
                                         <div class="qr-wrapper">
                                             <img src="assets/qr-code.png.jpeg" alt="UPI QR Code" class="qr-code">
                                         </div>
-                                    </div>
-                                    
-                                    <div class="checkbox-group">
-                                        <input type="checkbox" id="paymentConfirm" name="paymentConfirm">
-                                        <label for="paymentConfirm">I completed payment</label>
+
+                                        <div class="form-group" style="margin-top: 15px; text-align: left;">
+                                            <label for="paymentRef">Payment Reference / UTR Number *</label>
+                                            <input type="text" id="paymentRef" name="paymentRef" placeholder="Enter your UPI transaction ref number" required>
+                                            <small class="field-hint">Enter the UPI transaction reference number after completing payment</small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary submit-btn" id="submit-btn" disabled>Join ABVP</button>
+                            <button type="submit" class="btn btn-primary submit-btn" id="submit-btn" disabled>Register & Submit for Approval</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Check Registration Status Section -->
+        <section id="status-check" class="section-padding status-check-section">
+            <div class="container">
+                <div class="form-card status-card">
+                    <h2 class="section-title">Check Registration Status</h2>
+                    <p class="status-subtitle">Enter your registered email address to check your membership status</p>
+
+                    <div class="status-form-wrapper">
+                        <div class="status-input-group">
+                            <input type="email" id="statusEmail" placeholder="Enter your registered email" required>
+                            <button type="button" id="checkStatusBtn" class="btn btn-primary">Check Status</button>
+                        </div>
+                    </div>
+
+                    <!-- Status Result (dynamically shown) -->
+                    <div id="status-result" class="status-result hidden"></div>
                 </div>
             </div>
         </section>
@@ -182,7 +215,7 @@
             <div class="inspiration-card">
                 <img src="assets/vivekananda.jpg" class="insp-img">
                 <p>
-                    “Arise, awake and stop not till the goal is reached.”
+                    "Arise, awake and stop not till the goal is reached."
                     Swami Vivekananda inspired youth to build strength, character,
                     and serve the nation with dedication.
                 </p>
@@ -248,8 +281,8 @@
     <!-- Toast Notification -->
     <div id="toast" class="toast hidden">
         <div class="toast-content">
-            <div class="success-icon">✓</div>
-            <p>You have successfully joined ABVP Tamil Nadu</p>
+            <div class="toast-icon" id="toast-icon">✓</div>
+            <p id="toast-message">You have successfully registered for ABVP Tamil Nadu</p>
         </div>
     </div>
 
@@ -265,7 +298,6 @@
                 </div>
                 
                 <!-- Card Content Overlay -->
-                <!-- Positioning will be configured via CSS to match the background design -->
                 <div class="card-content-overlay">
                     <div class="card-photo-wrapper">
                         <img id="card-photo" src="" alt="Member Photo">
@@ -300,11 +332,16 @@
                             <span class="detail-label">Phone:</span>
                             <span class="detail-value" id="card-phone"></span>
                         </div>
-                        <!-- ID NO could be auto-generated -->
+                        <!-- ID NO -->
                         <div class="detail-row id-row">
                             <span class="detail-label">ID NO:</span>
                             <span class="detail-value font-bold" id="card-id"></span>
                         </div>
+                    </div>
+
+                    <!-- QR Code for Verification -->
+                    <div class="card-qr-wrapper" id="card-qr-wrapper">
+                        <div id="card-qr-code"></div>
                     </div>
                 </div>
             </div>
@@ -325,6 +362,15 @@
             <p>&copy; <span id="year"></span> Akhil Bharatiya Vidyarthi Parishad, Tamil Nadu. All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Firebase SDK (Compat mode — no build tools needed) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <!-- QR Code Generator -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
     <!-- html2canvas for card download -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

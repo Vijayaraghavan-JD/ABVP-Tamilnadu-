@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper Functions ──────────────────────────────────────
+    
+    // Check if the authenticated user exists in the admins collection
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+    }
+
+    // Check if the authenticated user has the super_admin role
+    function isSuperAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/admins/$(request.auth.token.email)).data.role == 'super_admin';
+    }
+
+    // ── Members Collection ────────────────────────────────────
+    match /members/{memberId} {
+      // Anyone can create a new registration (no auth required)
+      allow create: if true;
+
+      // Anyone can read (needed for email-based status check + QR verification)
+      allow read: if true;
+
+      // Only admins (any role) can update or delete member records
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Counters Collection ───────────────────────────────────
+    // Used for sequential membership ID generation
+    match /counters/{counterId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── Admins Collection (RBAC) ──────────────────────────────
+    // Document ID = admin's email address for efficient rule lookups
+    match /admins/{adminEmail} {
+      // Any authenticated user can read (to check if they're an admin)
+      allow read: if request.auth != null;
+
+      // Only super_admin can create, update, or delete admin records
+      allow create, update, delete: if isSuperAdmin();
+    }
+  }
+}

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Membership — ABVP Tamil Nadu</title>
+    <meta name="description" content="Verify ABVP Tamil Nadu membership authenticity by scanning the QR code on any membership card.">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF9933;
+            --primary-dark: #E68222;
+            --secondary: #000080;
+            --secondary-dark: #000066;
+            --white: #FFFFFF;
+            --light-bg: #F4F7F6;
+            --text-dark: #333333;
+            --text-muted: #666666;
+            --success: #10B981;
+            --danger: #EF4444;
+            --radius-md: 8px;
+            --radius-lg: 16px;
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--secondary-dark) 0%, #1a2a6c 50%, var(--secondary) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .verify-container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .logo-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-header img {
+            height: 60px;
+            margin-bottom: 10px;
+        }
+
+        .logo-header h1 {
+            color: var(--white);
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .logo-header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        /* Loading State */
+        .loading-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e0e0e0;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-card p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Result Card */
+        .result-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .result-header.valid {
+            background: linear-gradient(135deg, #059669, #10B981);
+        }
+
+        .result-header.invalid {
+            background: linear-gradient(135deg, #DC2626, #EF4444);
+        }
+
+        .result-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 36px;
+        }
+
+        .result-header h2 {
+            color: var(--white);
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .result-header p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .member-info {
+            padding: 30px;
+        }
+
+        .member-photo-section {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .member-photo-section img {
+            width: 100px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            border: 3px solid var(--primary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: var(--light-bg);
+            border-radius: var(--radius-md);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 0.85rem;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            text-transform: capitalize;
+        }
+
+        .membership-id-badge {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .membership-id-badge span {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+
+        /* No ID provided */
+        .no-id-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .no-id-card .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .no-id-card h2 {
+            color: var(--text-dark);
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .no-id-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="verify-container">
+        <div class="logo-header">
+            <img src="assets/logo.png" alt="ABVP Logo">
+            <h1>Membership Verification</h1>
+            <p>Akhil Bharatiya Vidyarthi Parishad — Tamil Nadu</p>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="loading-card">
+            <div class="spinner"></div>
+            <p>Verifying membership...</p>
+        </div>
+
+        <!-- No ID Provided -->
+        <div id="no-id-state" class="no-id-card hidden">
+            <div class="icon">🔍</div>
+            <h2>No Membership ID Provided</h2>
+            <p>Please scan a valid ABVP membership QR code to verify.</p>
+        </div>
+
+        <!-- Valid Member -->
+        <div id="valid-state" class="result-card hidden">
+            <div class="result-header valid">
+                <div class="result-icon">✓</div>
+                <h2>Verified Member</h2>
+                <p>This membership is authentic and active</p>
+            </div>
+            <div class="member-info">
+                <div class="member-photo-section">
+                    <img id="v-photo" src="" alt="Member Photo">
+                </div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="info-label">Name</span>
+                        <span class="info-value" id="v-name"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Institution</span>
+                        <span class="info-value" id="v-institution"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">District</span>
+                        <span class="info-value" id="v-district"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Member Since</span>
+                        <span class="info-value" id="v-since"></span>
+                    </div>
+                </div>
+                <div class="membership-id-badge">
+                    <span id="v-id"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invalid -->
+        <div id="invalid-state" class="result-card hidden">
+            <div class="result-header invalid">
+                <div class="result-icon">✕</div>
+                <h2>Invalid Membership</h2>
+                <p>This membership ID could not be verified</p>
+            </div>
+            <div class="member-info" style="text-align: center; padding: 40px;">
+                <p style="color: var(--text-muted);">The membership ID provided is not valid or has been revoked. If you believe this is an error, please contact ABVP Tamil Nadu.</p>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-link">← Back to ABVP Tamil Nadu</a>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="verify.js"></script>
+</body>
+</html>

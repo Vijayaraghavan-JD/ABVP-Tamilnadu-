@@ -1,3 +1,7 @@
+/* ============================================================
+   ABVP Tamil Nadu — Main Stylesheet
+   ============================================================ */
+
 /* Variables & Reset */
 :root {
     --primary: #FF9933; /* Saffron */
@@ -8,6 +12,11 @@
     --light-bg: #F4F7F6;
     --text-dark: #333333;
     --text-muted: #666666;
+    --success: #10B981;
+    --success-dark: #059669;
+    --danger: #EF4444;
+    --danger-dark: #DC2626;
+    --warning: #F59E0B;
     --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
     --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
     --radius-md: 8px;
@@ -197,6 +206,23 @@ body {
     width: 100%;
 }
 
+.nav-admin-link {
+    background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+    color: var(--white) !important;
+    padding: 6px 18px;
+    border-radius: var(--radius-md);
+    font-weight: 600 !important;
+}
+
+.nav-admin-link:hover {
+    color: var(--white) !important;
+    opacity: 0.9;
+}
+
+.nav-admin-link::after {
+    display: none !important;
+}
+
 .mobile-menu-btn {
     display: none;
     flex-direction: column;
@@ -222,12 +248,16 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 0; /* Nav sits on top or is sticky, let hero take full vh */
+    margin-top: 0;
 }
 
 /* Ensure navbar doesn't hide top of next section if hero isn't full height */
 #registration {
    scroll-margin-top: 80px; 
+}
+
+#status-check {
+    scroll-margin-top: 80px;
 }
 
 .carousel-container {
@@ -335,6 +365,13 @@ body {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(255, 153, 51, 0.1);
     background-color: var(--white);
+}
+
+.field-hint {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
 }
 
 /* Photo Upload */
@@ -454,27 +491,6 @@ body {
     object-fit: contain;
 }
 
-.checkbox-group {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
-    user-select: none;
-}
-
-.checkbox-group input {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--primary);
-    cursor: pointer;
-}
-
-.checkbox-group label {
-    cursor: pointer;
-    font-weight: 500;
-}
-
 .form-actions {
     margin-top: 40px;
     text-align: center;
@@ -488,7 +504,46 @@ body {
     max-width: 400px;
 }
 
-/* Toast */
+/* ── Loading Overlay ───────────────────────────────────────── */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 30, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-content {
+    text-align: center;
+    color: var(--white);
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-content p {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* ── Toast ─────────────────────────────────────────────────── */
 .toast {
     position: fixed;
     bottom: 30px;
@@ -499,9 +554,10 @@ body {
     padding: 15px 25px;
     border-radius: var(--radius-md);
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    z-index: 2000;
+    z-index: 6000;
     transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     opacity: 0;
+    max-width: 90%;
 }
 
 .toast.show {
@@ -515,26 +571,186 @@ body {
     gap: 15px;
 }
 
-.success-icon {
-    width: 24px;
-    height: 24px;
-    background: #28a745;
-    color: white;
+.toast-icon {
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 14px;
     font-weight: bold;
+    flex-shrink: 0;
+}
+
+.success-icon {
+    background: #28a745;
+    color: white;
+}
+
+.error-icon {
+    background: var(--danger);
+    color: white;
 }
 
 .toast p {
     font-weight: 500;
     color: var(--text-dark);
     margin: 0;
+    font-size: 0.95rem;
 }
 
-/* Membership Card Page View */
+/* ── Status Check Section ──────────────────────────────────── */
+.status-check-section {
+    background: linear-gradient(135deg, #f8f9ff, #eef1ff);
+}
+
+.status-card {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.status-subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    margin-bottom: 30px;
+    margin-top: -20px;
+}
+
+.status-form-wrapper {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.status-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.status-input-group input {
+    flex: 1;
+    padding: 14px 18px;
+    border: 2px solid #ddd;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.status-input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 153, 51, 0.1);
+}
+
+.status-input-group .btn {
+    white-space: nowrap;
+}
+
+/* Status Result */
+.status-result {
+    margin-top: 30px;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.status-result-inner {
+    text-align: center;
+    padding: 30px;
+    background: var(--light-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid #e0e0e0;
+}
+
+.status-icon-large {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.badge-pending {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.badge-active {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-rejected {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.badge-not-found {
+    background: #E0E7FF;
+    color: #3730A3;
+}
+
+.status-result-inner h3 {
+    font-size: 1.3rem;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.status-result-inner > p {
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+.status-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+    text-align: left;
+}
+
+.status-detail-item {
+    background: var(--white);
+    padding: 12px 15px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.status-detail-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.sdl {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.sdv {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+}
+
+.membership-id-highlight {
+    color: var(--primary-dark) !important;
+    font-size: 1.1rem !important;
+    letter-spacing: 1px;
+}
+
+/* ── Membership Card (Updated with QR) ─────────────────────── */
 .card-view {
     min-height: 100vh;
     display: flex;
@@ -585,9 +801,8 @@ body {
     width: 100%;
     height: 100%;
     z-index: 2;
-    padding: 0; /* Let's position things absolutely to adapt to bg */
+    padding: 0;
     display: flex;
-    /* This layout might need adjustment based on requested background image */
 }
 
 /* Absolute positioning to lay out over an image */
@@ -615,8 +830,8 @@ body {
     left: 8%;
     top: 25%;
     width: 60%;
-    color: var(--text-dark); /* Should adapt to bg contrast, defaulting to dark */
-    font-size: 0.95rem; /* Base relative to 600px width */
+    color: var(--text-dark);
+    font-size: 0.95rem;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -642,6 +857,25 @@ body {
     margin-top: 15px;
     font-size: 1.1rem;
     color: var(--primary-dark);
+}
+
+/* QR Code on Card */
+.card-qr-wrapper {
+    position: absolute;
+    right: 8%;
+    bottom: 8%;
+    width: 80px;
+    height: 80px;
+    background: white;
+    padding: 3px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.card-qr-wrapper canvas,
+.card-qr-wrapper img {
+    width: 100% !important;
+    height: 100% !important;
 }
 
 .card-actions {
@@ -671,7 +905,60 @@ body {
     font-size: 0.9rem;
 }
 
-/* Responsive Styles */
+/* ── About, Inspiration, Contact Sections ──────────────────── */
+.about-box {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+    font-size: 1.1rem;
+    color: var(--text-muted);
+}
+
+.about-box p + p {
+    margin-top: 15px;
+}
+
+.inspiration-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.inspiration-card {
+    text-align: center;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+}
+
+.insp-img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.contact-section {
+    background: linear-gradient(135deg, #000080, #1a2a6c);
+    color: white;
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.contact-card {
+    background: rgba(255,255,255,0.08);
+    padding: 25px;
+    border-radius: 12px;
+}
+
+/* ── Responsive Styles ─────────────────────────────────────── */
 @media (max-width: 900px) {
     .form-grid {
         grid-template-columns: 1fr;
@@ -681,7 +968,7 @@ body {
 
 @media (max-width: 768px) {
     .nav-brand {
-        display: none; /* Hide long text on mobile to fit logo well, or make smaller */
+        display: none;
     }
     
     .nav-logo {
@@ -720,7 +1007,6 @@ body {
 
     .membership-card-wrapper {
         width: 100%;
-        /* Font scaling for smaller card view */
         font-size: 2.5vw;
     }
     
@@ -729,6 +1015,19 @@ body {
     }
     .detail-label {
         min-width: 80px;
+    }
+
+    .status-input-group {
+        flex-direction: column;
+    }
+
+    .status-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .inspiration-grid,
+    .contact-grid {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -745,54 +1044,4 @@ body {
         flex-direction: column;
         width: 100%;
     }
-/* About */
-.about-box {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: var(--shadow-soft);
-    font-size: 1.1rem;
-    color: var(--text-muted);
-}
-
-/* Inspiration */
-.inspiration-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-}
-
-.inspiration-card {
-    text-align: center;
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: var(--shadow-soft);
-}
-
-.insp-img {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 15px;
-}
-
-/* Contact */
-.contact-section {
-    background: linear-gradient(135deg, #000080, #1a2a6c);
-    color: white;
-}
-
-.contact-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-}
-
-.contact-card {
-    background: rgba(255,255,255,0.08);
-    padding: 25px;
-    border-radius: 12px;
-}
 }
