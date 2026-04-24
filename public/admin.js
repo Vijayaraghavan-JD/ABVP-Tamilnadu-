@@ -219,23 +219,36 @@
         let members = filter ? filter : allMembers;
 
         if (members.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" class="empty-row">No members found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="empty-row">No members found</td></tr>';
             return;
         }
 
-        tbody.innerHTML = members.map(m => `
-            <tr>
-                <td><img src="${m.photoBase64 || ''}" alt="" class="table-photo"></td>
-                <td style="text-transform:capitalize">${escHtml(m.fullName)}</td>
-                <td style="font-size:0.8rem">${escHtml(m.email)}</td>
-                <td>${escHtml(m.phone)}</td>
-                <td style="text-transform:capitalize">${escHtml(m.institutionType)}</td>
-                <td style="text-transform:capitalize">${escHtml(m.district)}</td>
-                <td style="font-size:0.8rem">${escHtml(m.paymentRef || '-')}</td>
-                <td><span class="status-badge status-${m.status}">${statusLabel(m.status)}</span></td>
-                <td><button class="btn-view" onclick="openMemberModal('${m.id}')">View</button></td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = members.map(m => {
+            let validityStatus = '-';
+            if (m.validUntil) {
+                const validUntilDate = m.validUntil.toDate ? m.validUntil.toDate() : new Date(m.validUntil);
+                const today = new Date();
+                validityStatus = today > validUntilDate ?
+                    `<span style="color:red; font-weight:bold;">Expired</span>` :
+                    `<span style="color:green; font-weight:bold;">Valid</span>`;
+            }
+
+            return `
+                <tr>
+                    <td><img src="${m.photoBase64 || ''}" alt="" class="table-photo"></td>
+                    <td style="text-transform:capitalize">${escHtml(m.fullName)}</td>
+                    <td style="font-size:0.8rem">${escHtml(m.email)}</td>
+                    <td>${escHtml(m.phone)}</td>
+                    <td style="text-transform:capitalize">${escHtml(m.institutionType)}</td>
+                    <td style="text-transform:capitalize">${escHtml(m.district)}</td>
+                    <td style="font-size:0.8rem">${escHtml(m.paymentRef || '-')}</td>
+                    <td><span class="status-badge status-${m.status}">${statusLabel(m.status)}</span></td>
+                    <td style="font-size:0.8rem">${m.validUntil ? formatDate(m.validUntil) : '-'}</td>
+                    <td>${validityStatus}</td>
+                    <td><button class="btn-view" onclick="openMemberModal('${m.id}')">View</button></td>
+                </tr>
+            `;
+        }).join('');
     }
 
     // ── Pending List ────────────────────────────────────────────
@@ -344,8 +357,35 @@
         if (member.status === 'pending_review') {
             actions.classList.remove('hidden');
             document.getElementById('rejection-reason').value = '';
+
+            // Set default validity date to May 31st of next year
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth(); // 0-11, so 5 = June
+
+            let defaultValidUntil;
+            if (currentMonth >= 5) { // June to December
+                defaultValidUntil = new Date(currentYear + 1, 4, 31); // May 31 next year
+            } else { // January to May
+                defaultValidUntil = new Date(currentYear, 4, 31); // May 31 current year
+            }
+
+            const dateString = defaultValidUntil.toISOString().split('T')[0];
+            document.getElementById('validity-date').value = dateString;
         } else {
             actions.classList.add('hidden');
+
+            // Display validity info if already set
+            if (member.validUntil) {
+                const validUntilDate = member.validUntil.toDate ? member.validUntil.toDate() : new Date(member.validUntil);
+                const validRow = document.createElement('div');
+                validRow.className = 'modal-detail-row';
+                validRow.innerHTML = `
+                    <span class="modal-detail-label">Valid Until:</span>
+                    <span class="miv">${formatDate(validUntilDate)}</span>
+                `;
+                document.getElementById('modal-rejection-row').parentNode.insertBefore(validRow, document.getElementById('modal-rejection-row').nextSibling);
+            }
         }
 
         // Show modal
@@ -364,23 +404,35 @@
     window.approveMember = async function () {
         if (!currentMemberDocId) return;
 
+        const validityDateInput = document.getElementById('validity-date').value;
+
+        if (!validityDateInput) {
+            showAdminToast('Please select a validity date.');
+            return;
+        }
+
         const btn = document.getElementById('btn-approve-member');
         btn.disabled = true;
         btn.textContent = 'Approving...';
 
         try {
+            // Convert validity date to Firestore Timestamp
+            const validityDate = new Date(validityDateInput);
+            validityDate.setHours(23, 59, 59, 999); // Set to end of day
+
             // Generate sequential membership ID
             const membershipId = await generateMembershipId();
 
             await db.collection('members').doc(currentMemberDocId).update({
                 status: 'active',
                 membershipId: membershipId,
+                validUntil: firebase.firestore.Timestamp.fromDate(validityDate),
                 reviewedBy: currentUser.email,
                 reviewedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
             closeMemberModal();
-            showAdminToast('Member approved! Membership ID: ' + membershipId);
+            showAdminToast('Member approved! Membership ID: ' + membershipId + ' | Valid until: ' + validityDateInput);
 
         } catch (err) {
             console.error('Approval error:', err);

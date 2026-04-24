@@ -16,17 +16,23 @@
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <div class="logo-area">
+            <!-- Left: Logo and Brand -->
+            <div class="nav-left">
                 <img src="assets/logo.png" alt="ABVP Logo" class="nav-logo">
-                <span class="nav-brand">Akhil Bharatiya Vidyarthi Parishad - Tamilnadu </span>
+                <div class="nav-brand-section">
+                    <span class="nav-brand">Akhil Bharatiya Vidyarthi Parishad</span>
+                    <span class="nav-state">Tamil Nadu</span>
+                </div>
             </div>
-            
+
+            <!-- Mobile Menu Button -->
             <div class="mobile-menu-btn" id="mobile-menu-btn">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
 
+            <!-- Right: Navigation Links -->
             <ul class="nav-links" id="nav-links">
                 <li><a href="#about">About Us</a></li>
                 <li><a href="#inspiration">Our Inspiration</a></li>
@@ -64,6 +70,51 @@
                 <a href="#registration" class="btn btn-primary" id="scroll-to-join">Join ABVP</a>
             </div>
         </section>
+        <!-- Placeholder Sections --><section id="about" class="section-padding bg-light">
+    <div class="container">
+        <h2 class="section-title">About Us</h2>
+
+        <div class="about-box">
+            <p>
+                Akhil Bharatiya Vidyarthi Parishad (ABVP) is India's largest student organization,
+                committed to empowering students and building a strong nation. We stand for student
+                rights, quality education, and social welfare.
+            </p>
+
+            <p>
+                ABVP Tamil Nadu works tirelessly to address student issues, promote educational
+                reforms, and create opportunities for youth leadership. We believe in the power of
+                students to transform society and create a brighter future for all.
+            </p>
+        </div>
+    </div>
+</section>
+       <section id="inspiration" class="section-padding">
+    <div class="container">
+        <h2 class="section-title">Our Inspiration</h2>
+
+        <div class="inspiration-grid">
+
+            <!-- Vivekananda -->
+            <div class="inspiration-card">
+                <img src="assets/vivekananda.jpg" class="insp-img">
+                <p>
+                    "Arise, awake and stop not till the goal is reached."
+                    Swami Vivekananda inspired youth to build strength, character,
+                    and serve the nation with dedication.
+                </p>
+            </div>
+
+            <!-- Second Image -->
+            <div class="inspiration-card">
+                <img src="assets/your-image.jpg" class="insp-img">
+                <p>
+                    (Ithu nee kuduka pora content inga replace panniko)
+                </p>
+            </div>
+
+        </div>
+    </div>
 
         <!-- Registration Form Section -->
         <section id="registration" class="registration-section section-padding">
@@ -76,8 +127,8 @@
                             <!-- Left Column: Details -->
                             <div class="form-column">
                                 <div class="form-group">
-                                    <label for="fullName">Full Name *</label>
-                                    <input type="text" id="fullName" name="fullName" required placeholder="Enter your full name">
+                                    <label for="fullName">Full Name with Inital*</label>
+                                    <input type="text" id="fullName" name="fullName" required placeholder="Enter your Full Name with Inital">
                                 </div>
 
                                 <div class="form-group">
@@ -186,65 +237,21 @@
             </div>
         </section>
         
-        <!-- Placeholder Sections --><section id="about" class="section-padding bg-light">
-    <div class="container">
-        <h2 class="section-title">About Us</h2>
-
-        <div class="about-box">
-            <p>
-                Akhil Bharatiya Vidyarthi Parishad (ABVP) is India's largest student organization,
-                committed to empowering students and building a strong nation. We stand for student
-                rights, quality education, and social welfare.
-            </p>
-
-            <p>
-                ABVP Tamil Nadu works tirelessly to address student issues, promote educational
-                reforms, and create opportunities for youth leadership. We believe in the power of
-                students to transform society and create a brighter future for all.
-            </p>
-        </div>
-    </div>
-</section>
-       <section id="inspiration" class="section-padding">
-    <div class="container">
-        <h2 class="section-title">Our Inspiration</h2>
-
-        <div class="inspiration-grid">
-
-            <!-- Vivekananda -->
-            <div class="inspiration-card">
-                <img src="assets/vivekananda.jpg" class="insp-img">
-                <p>
-                    "Arise, awake and stop not till the goal is reached."
-                    Swami Vivekananda inspired youth to build strength, character,
-                    and serve the nation with dedication.
-                </p>
-            </div>
-
-            <!-- Second Image -->
-            <div class="inspiration-card">
-                <img src="assets/your-image.jpg" class="insp-img">
-                <p>
-                    (Ithu nee kuduka pora content inga replace panniko)
-                </p>
-            </div>
-
-        </div>
-    </div>
+        
 </section>
         <section id="contact" class="section-padding contact-section">
     <div class="container">
-        <h2 class="section-title text-white">Contact Us</h2>
+        <h2 class="section-title" style="color: white;">Contact Us</h2>
 
         <div class="contact-grid">
 
             <!-- Left -->
             <div class="contact-card">
-                <h3>Get in Touch</h3>
+                <h3>Get in Touch</h3><br>
 
                 <p><strong>Phone:</strong><br>
                 +91 944402038<br>
-                +91 9363281119</p>
+                +91 9363281119</p><br>
 
                 <p><strong>Email:</strong><br>
                 abvpntn1949@gmail.com<br>
@@ -254,15 +261,15 @@
             <!-- Right -->
             <div class="contact-card">
                 <h3>Office Address</h3>
-
-                <p>
+<br>
+                <p> <b>North Tamil Nadu</b><br>
                     Seva No.79,<br>
                     Dr Alagappa Road,<br>
                     Purasaiwakkam,<br>
                     Chennai - 600084
                 </p>
-
-                <p>
+<br>
+                <p> <b>South Tamil Nadu</b><br>
                     4A Srinivasa Perumal Kovil Street,<br>
                     Munichalai,<br>
                     Madurai - 625009
@@ -290,66 +297,70 @@
     <div id="card-view" class="card-view hidden">
         <div class="container card-view-container">
             <h2 class="section-title text-white">Your Membership Card</h2>
-            
+
             <div class="membership-card-wrapper" id="membership-card-render">
-                <!-- Card Background -->
+                <!-- Background Image (Static Design) -->
                 <div class="card-bg">
-                    <img src="assets/membership-bg.jpg.jpeg" alt="Card Background">
+                    <img src="assets/Member-card-Background.png" alt="Card Background">
                 </div>
-                
-                <!-- Card Content Overlay -->
-                <div class="card-content-overlay">
-                    <div class="card-photo-wrapper">
-                        <img id="card-photo" src="" alt="Member Photo">
-                    </div>
-                    
-                    <div class="card-details">
-                        <div class="detail-row">
+
+                <!-- Dynamic Content Overlay -->
+                <div class="card-overlay">
+                    <!-- Member Details (Left Side) -->
+                    <div class="member-details">
+                        <div class="detail-item">
                             <span class="detail-label">Name:</span>
-                            <span class="detail-value text-capitalize" id="card-name"></span>
+                            <span class="detail-value" id="card-name">_____________________</span>
                         </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Institution:</span>
-                            <span class="detail-value text-capitalize" id="card-institution"></span>
+                        <div class="detail-item">
+                            <span class="detail-label">School / College:</span>
+                            <span class="detail-value" id="card-institution">_____________________</span>
                         </div>
-                        <div class="detail-row">
+                        <div class="detail-item">
                             <span class="detail-label">District:</span>
-                            <span class="detail-value text-capitalize" id="card-district"></span>
+                            <span class="detail-value" id="card-district">_____________________</span>
                         </div>
-                        <div class="detail-row">
+                        <div class="detail-item">
                             <span class="detail-label">Email:</span>
-                            <span class="detail-value" id="card-email"></span>
+                            <span class="detail-value" id="card-email">_____________________</span>
                         </div>
-                        <div class="detail-row">
+                        <div class="detail-item">
                             <span class="detail-label">Gender:</span>
-                            <span class="detail-value text-capitalize" id="card-gender"></span>
+                            <span class="detail-value" id="card-gender">_____________________</span>
                         </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Blood Grp:</span>
-                            <span class="detail-value" id="card-blood"></span>
+                        <div class="detail-item">
+                            <span class="detail-label">Blood Group:</span>
+                            <span class="detail-value" id="card-blood">_____________________</span>
                         </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Phone:</span>
-                            <span class="detail-value" id="card-phone"></span>
-                        </div>
-                        <!-- ID NO -->
-                        <div class="detail-row id-row">
-                            <span class="detail-label">ID NO:</span>
-                            <span class="detail-value font-bold" id="card-id"></span>
+                        <div class="detail-item">
+                            <span class="detail-label">Phone Number:</span>
+                            <span class="detail-value" id="card-phone">_____________________</span>
                         </div>
                     </div>
 
-                    <!-- QR Code for Verification -->
-                    <div class="card-qr-wrapper" id="card-qr-wrapper">
+                    <!-- Member Photo (Right Side - Top Box) -->
+                    <div class="member-photo-box">
+                        <img id="card-photo" src="" alt="Member Photo" class="member-photo-img">
+                    </div>
+
+                    <!-- QR Code (Right Side - Bottom Box) -->
+                    <div class="member-qr-box">
                         <div id="card-qr-code"></div>
                     </div>
+
+                    <!-- Membership ID (Hidden, used for QR generation) -->
+                    <div style="display:none;" id="card-id"></div>
                 </div>
             </div>
-            
+
             <div class="card-actions">
-                <button id="download-btn" class="btn btn-primary">
+                <button id="download-img-btn" class="btn btn-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    Download Membership Card
+                    Download as Image
+                </button>
+                <button id="download-pdf-btn" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Download as PDF
                 </button>
                 <button id="return-btn" class="btn btn-outline">Return to Home</button>
             </div>
@@ -374,6 +385,10 @@
 
     <!-- html2canvas for card download -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <script src="script.js"></script>
 </body>
 </html>

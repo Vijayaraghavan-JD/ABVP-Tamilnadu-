@@ -51,11 +51,41 @@
             // Found a valid active member
             const member = snapshot.docs[0].data();
 
+            // Check validity date
+            const today = new Date();
+            let isValid = true;
+            let validityStatus = 'Valid';
+            let validityClass = 'validity-valid';
+
+            if (member.validUntil) {
+                const validUntilDate = member.validUntil.toDate ? member.validUntil.toDate() : new Date(member.validUntil);
+                if (today > validUntilDate) {
+                    isValid = false;
+                    validityStatus = 'Expired';
+                    validityClass = 'validity-expired';
+                }
+            }
+
+            // If expired, show invalid state instead
+            if (!isValid) {
+                document.getElementById('invalid-reason').textContent = `This membership expired on ${formatDate(member.validUntil)}`;
+                showState(invalidState);
+                return;
+            }
+
             // Populate the valid state
             document.getElementById('v-name').textContent = member.fullName || 'N/A';
             document.getElementById('v-institution').textContent = member.institutionType || 'N/A';
             document.getElementById('v-district').textContent = member.district || 'N/A';
             document.getElementById('v-id').textContent = member.membershipId;
+
+            // Validity information
+            if (member.validUntil) {
+                const validUntilDate = member.validUntil.toDate ? member.validUntil.toDate() : new Date(member.validUntil);
+                document.getElementById('v-validity').textContent = formatDate(validUntilDate);
+                document.getElementById('v-validity-status').textContent = validityStatus;
+                document.getElementById('v-validity-status').className = `validity-badge ${validityClass}`;
+            }
 
             // Photo
             const photoEl = document.getElementById('v-photo');

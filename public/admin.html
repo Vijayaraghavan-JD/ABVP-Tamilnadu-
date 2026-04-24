@@ -336,6 +336,11 @@
                 <!-- Action Buttons (only for pending) -->
                 <div id="modal-actions" class="modal-actions hidden">
                     <div class="form-group" style="margin-bottom:15px;">
+                        <label for="validity-date" style="font-weight:500; font-size:0.9rem;">Validity Until (for approval) *</label>
+                        <input type="date" id="validity-date" class="modal-input" required>
+                        <small style="color:#666; font-size:0.8rem;">Membership valid until this date</small>
+                    </div>
+                    <div class="form-group" style="margin-bottom:15px;">
                         <label for="rejection-reason" style="font-weight:500; font-size:0.9rem;">Notes / Rejection Reason (optional):</label>
                         <textarea id="rejection-reason" class="modal-textarea" placeholder="Enter reason if rejecting..."></textarea>
                     </div>

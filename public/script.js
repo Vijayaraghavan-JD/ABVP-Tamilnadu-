@@ -205,6 +205,20 @@
             const type = institutionType.value;
             const fee = feeMap[type] ? feeMap[type].value : 0;
 
+            // Calculate validity: Valid until May 31st of next academic year
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth(); // 0-11, so 5 = June
+
+            let validUntilDate;
+            if (currentMonth >= 5) { // June to December
+                // Valid until May 31st of next year
+                validUntilDate = new Date(currentYear + 1, 4, 31); // Month is 0-indexed, so 4 = May
+            } else { // January to May
+                // Valid until May 31st of current year
+                validUntilDate = new Date(currentYear, 4, 31);
+            }
+
             // Build member document
             const memberData = {
                 fullName: document.getElementById('fullName').value.trim(),
@@ -222,6 +236,7 @@
                 rejectionReason: null,
                 reviewedBy: null,
                 reviewedAt: null,
+                validUntil: firebase.firestore.Timestamp.fromDate(validUntilDate),
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
@@ -429,34 +444,86 @@
     };
 
     // ── Download Membership Card ────────────────────────────────
-    const downloadBtn = document.getElementById('download-btn');
+    const downloadImgBtn = document.getElementById('download-img-btn');
+    const downloadPdfBtn = document.getElementById('download-pdf-btn');
     const cardToRender = document.getElementById('membership-card-render');
 
-    downloadBtn.addEventListener('click', () => {
-        const originalText = downloadBtn.innerHTML;
-        downloadBtn.innerHTML = 'Generating...';
-        downloadBtn.disabled = true;
+    downloadImgBtn.addEventListener('click', () => {
+        downloadCardAsImage();
+    });
 
-        html2canvas(cardToRender, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: null
-        }).then(canvas => {
+    downloadPdfBtn.addEventListener('click', () => {
+        downloadCardAsPdf();
+    });
+
+    async function downloadCardAsImage() {
+        const originalText = downloadImgBtn.innerHTML;
+        downloadImgBtn.innerHTML = 'Generating...';
+        downloadImgBtn.disabled = true;
+
+        try {
+            const canvas = await html2canvas(cardToRender, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false
+            });
             const imgData = canvas.toDataURL('image/png');
             const link = document.createElement('a');
             link.download = 'ABVP-Membership-Card.png';
             link.href = imgData;
             link.click();
 
-            downloadBtn.innerHTML = originalText;
-            downloadBtn.disabled = false;
-        }).catch(err => {
+            showToast('Card downloaded as image!', 'success');
+            downloadImgBtn.innerHTML = originalText;
+            downloadImgBtn.disabled = false;
+        } catch (err) {
             console.error("Error generating card image:", err);
             showToast('Error generating card image. Please try again.', 'error');
-            downloadBtn.innerHTML = originalText;
-            downloadBtn.disabled = false;
-        });
-    });
+            downloadImgBtn.innerHTML = originalText;
+            downloadImgBtn.disabled = false;
+        }
+    }
+
+    async function downloadCardAsPdf() {
+        const originalText = downloadPdfBtn.innerHTML;
+        downloadPdfBtn.innerHTML = 'Generating PDF...';
+        downloadPdfBtn.disabled = true;
+
+        try {
+            const canvas = await html2canvas(cardToRender, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false
+            });
+
+            const { jsPDF } = window.jspdf;
+
+            // Card dimensions (approximately 8.5" x 5.4" for standard card)
+            const imgWidth = 210; // A4 width in mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: [210, 148] // A5 landscape
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            pdf.addImage(imgData, 'PNG', 10, 10, 190, (190 * canvas.height) / canvas.width);
+            pdf.save('ABVP-Membership-Card.pdf');
+
+            showToast('Card downloaded as PDF!', 'success');
+            downloadPdfBtn.innerHTML = originalText;
+            downloadPdfBtn.disabled = false;
+        } catch (err) {
+            console.error("Error generating PDF:", err);
+            showToast('Error generating PDF. Please try again.', 'error');
+            downloadPdfBtn.innerHTML = originalText;
+            downloadPdfBtn.disabled = false;
+        }
+    }
 
     // ── Return to Home ──────────────────────────────────────────
     const returnBtn = document.getElementById('return-btn');
