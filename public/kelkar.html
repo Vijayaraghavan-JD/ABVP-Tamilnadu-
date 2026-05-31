@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prof. Yashwanth Rao Kelkar — ABVP Tamil Nadu</title>
+    <meta name="description" content="Learn about Prof. Yashwantrao Kelkar, the chief ideological architect of ABVP.">
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="inspiration-detail.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <img src="assets/logo.png" alt="ABVP Logo" class="nav-logo">
+                <div class="nav-brand-section">
+                    <span class="nav-brand">Akhil Bharatiya Vidyarthi Parishad</span>
+                    <span class="nav-separator">—</span>
+                    <span class="nav-state">Tamil Nadu</span>
+                </div>
+            </div>
+            <div class="mobile-menu-btn" id="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html#about">About Us</a></li>
+                <li><a href="index.html#inspiration">Our Inspiration</a></li>
+                <li><a href="index.html#contact">Contact Us</a></li>
+                <li><a href="index.html#status-check">Check Status</a></li>
+                <li><a href="admin.html" class="nav-admin-link">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Banner -->
+    <section class="detail-hero detail-hero-kelkar">
+        <div class="detail-hero-overlay"></div>
+        <div class="detail-hero-content">
+            <h1>Prof. Yashwanth Rao Kelkar</h1>
+            <p class="detail-hero-subtitle">The Architect of ABVP</p>
+        </div>
+    </section>
+
+    <!-- Detail Content -->
+    <section class="detail-section">
+        <div class="container">
+            <div class="detail-content-card">
+                <div class="detail-image-wrapper">
+                    <img src="assets/your-image.jpg" alt="Prof. Yashwanth Rao Kelkar" class="detail-img">
+                </div>
+                <div class="detail-text-wrapper">
+                    <blockquote class="detail-quote">
+                        "Students are the future architects of the nation."
+                    </blockquote>
+                    <p class="detail-description">
+                        Prof. Yashwantrao Kelkar (1920–1987) was an Indian academic, social activist, and the chief
+                        ideological architect of the Akhil Bharatiya Vidyarthi Parishad (ABVP), one of India's largest
+                        student organizations. He transformed the body into a massive, well-knit student movement
+                        grounded in nationalist values and youth empowerment.
+                    </p>
+                    <a href="index.html#inspiration" class="btn btn-primary btn-back">← Back to Our Inspiration</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p>&copy; <span id="year"></span> Akhil Bharatiya Vidyarthi Parishad, Tamil Nadu. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const navLinks = document.getElementById('nav-links');
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+        }
+    </script>
+</body>
+
+</html>

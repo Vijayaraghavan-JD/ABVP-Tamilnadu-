@@ -159,9 +159,10 @@ body {
 }
 
 .nav-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 15px 20px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 12px 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -180,8 +181,9 @@ body {
 
 .nav-brand-section {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .nav-brand {
@@ -191,9 +193,16 @@ body {
     letter-spacing: 0.5px;
 }
 
+.nav-separator {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin: 0 2px;
+}
+
 .nav-state {
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 1.1rem;
+    font-weight: 600;
     color: var(--text-muted);
 }
 
@@ -1028,17 +1037,41 @@ body {
 .inspiration-card {
     text-align: center;
     background: white;
-    padding: 20px;
+    padding: 25px;
     border-radius: 12px;
     box-shadow: var(--shadow-soft);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.inspiration-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
 }
 
 .insp-img {
     width: 100%;
-    height: 250px;
-    object-fit: cover;
+    height: auto;
+    object-fit: contain;
     border-radius: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.insp-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--secondary);
+    margin-bottom: 18px;
+    letter-spacing: 0.3px;
+}
+
+.btn-read-more {
+    padding: 10px 32px;
+    font-size: 0.95rem;
+    border-radius: 25px;
+    margin-top: auto;
 }
 
 .contact-section {
@@ -1068,7 +1101,25 @@ body {
 
 @media (max-width: 768px) {
     .nav-brand {
+        font-size: 0.85rem;
+        display: block;
+    }
+
+    .nav-separator {
         display: none;
+    }
+
+    .nav-state {
+        display: block;
+        font-size: 0.7rem;
+        width: 100%;
+    }
+
+    .nav-brand-section {
+        flex-direction: column;
+        gap: 0;
+        align-items: flex-start;
+        line-height: 1.2;
     }
 
     .nav-logo {
