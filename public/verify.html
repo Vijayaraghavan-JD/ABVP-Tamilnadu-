@@ -286,8 +286,16 @@
                         <span class="info-value" id="v-name"></span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Institution</span>
+                        <span class="info-label">Institution Type</span>
                         <span class="info-value" id="v-institution"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Institution Name</span>
+                        <span class="info-value" id="v-institution-name"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Course Details</span>
+                        <span class="info-value" id="v-course-details"></span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">District</span>
@@ -296,6 +304,14 @@
                     <div class="info-row">
                         <span class="info-label">Member Since</span>
                         <span class="info-value" id="v-since"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Valid Until</span>
+                        <span class="info-value" id="v-validity"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status</span>
+                        <span class="info-value" id="v-validity-status"></span>
                     </div>
                 </div>
                 <div class="membership-id-badge">
@@ -312,7 +328,7 @@
                 <p>This membership ID could not be verified</p>
             </div>
             <div class="member-info" style="text-align: center; padding: 40px;">
-                <p style="color: var(--text-muted);">The membership ID provided is not valid or has been revoked. If you believe this is an error, please contact ABVP Tamil Nadu.</p>
+                <p style="color: var(--text-muted);" id="invalid-reason">The membership ID provided is not valid or has been revoked. If you believe this is an error, please contact ABVP Tamil Nadu.</p>
             </div>
         </div>
 

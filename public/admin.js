@@ -281,6 +281,14 @@
                         <span class="pcd-value">${escHtml(m.institutionType)}</span>
                     </div>
                     <div class="pcd-item">
+                        <span class="pcd-label">Institution Name</span>
+                        <span class="pcd-value">${escHtml(m.institutionName || '-')}</span>
+                    </div>
+                    <div class="pcd-item">
+                        <span class="pcd-label">Course Details</span>
+                        <span class="pcd-value">${escHtml(m.courseDetails || '-')}</span>
+                    </div>
+                    <div class="pcd-item">
                         <span class="pcd-label">District</span>
                         <span class="pcd-value">${escHtml(m.district)}</span>
                     </div>
@@ -318,6 +326,8 @@
         document.getElementById('modal-email').textContent = member.email;
         document.getElementById('modal-phone').textContent = member.phone;
         document.getElementById('modal-institution').textContent = member.institutionType;
+        document.getElementById('modal-institution-name').textContent = member.institutionName || 'N/A';
+        document.getElementById('modal-course-details').textContent = member.courseDetails || 'N/A';
         document.getElementById('modal-district').textContent = member.district;
         document.getElementById('modal-gender').textContent = member.gender;
         document.getElementById('modal-blood').textContent = member.bloodGroup || 'N/A';
@@ -540,13 +550,15 @@
             return;
         }
 
-        const headers = ['Name', 'Email', 'Phone', 'Institution Type', 'District', 'Gender', 'Blood Group', 'Fee', 'Payment Ref', 'Status', 'Membership ID', 'Registered On'];
+        const headers = ['Name', 'Email', 'Phone', 'Institution Type', 'Institution Name', 'Course Details', 'District', 'Gender', 'Blood Group', 'Fee', 'Payment Ref', 'Status', 'Membership ID', 'Registered On'];
 
         const rows = allMembers.map(m => [
             m.fullName || '',
             m.email || '',
             m.phone || '',
             m.institutionType || '',
+            m.institutionName || '',
+            m.courseDetails || '',
             m.district || '',
             m.gender || '',
             m.bloodGroup || '',

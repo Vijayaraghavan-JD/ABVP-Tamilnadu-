@@ -76,6 +76,8 @@
             // Populate the valid state
             document.getElementById('v-name').textContent = member.fullName || 'N/A';
             document.getElementById('v-institution').textContent = member.institutionType || 'N/A';
+            document.getElementById('v-institution-name').textContent = member.institutionName || 'N/A';
+            document.getElementById('v-course-details').textContent = member.courseDetails || 'N/A';
             document.getElementById('v-district').textContent = member.district || 'N/A';
             document.getElementById('v-id').textContent = member.membershipId;
 

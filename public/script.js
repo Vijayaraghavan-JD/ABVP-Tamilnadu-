@@ -226,6 +226,8 @@
                 phone: document.getElementById('phone').value.trim(),
                 district: document.getElementById('district').value.trim(),
                 institutionType: type,
+                institutionName: document.getElementById('institutionName').value.trim(),
+                courseDetails: document.getElementById('courseDetails').value.trim(),
                 gender: document.getElementById('gender').value,
                 bloodGroup: document.getElementById('bloodGroup').value.trim() || 'N/A',
                 photoBase64: compressedPhotoData,
@@ -364,11 +366,19 @@
                 <div class="status-details-grid">
                     <div class="status-detail-item">
                         <span class="sdl">Name</span>
-                        <span class="sdv">${member.fullName}</span>
+                        <span class="sdv">${escHtml(member.fullName)}</span>
                     </div>
                     <div class="status-detail-item">
-                        <span class="sdl">Institution</span>
-                        <span class="sdv" style="text-transform:capitalize">${member.institutionType}</span>
+                        <span class="sdl">Institution Type</span>
+                        <span class="sdv" style="text-transform:capitalize">${escHtml(member.institutionType)}</span>
+                    </div>
+                    <div class="status-detail-item">
+                        <span class="sdl">Institution Name</span>
+                        <span class="sdv">${escHtml(member.institutionName || 'N/A')}</span>
+                    </div>
+                    <div class="status-detail-item">
+                        <span class="sdl">Course Details</span>
+                        <span class="sdv">${escHtml(member.courseDetails || 'N/A')}</span>
                     </div>
                     <div class="status-detail-item">
                         <span class="sdl">Registered On</span>
@@ -376,12 +386,12 @@
                     </div>
                     <div class="status-detail-item">
                         <span class="sdl">Payment Ref</span>
-                        <span class="sdv">${member.paymentRef || 'N/A'}</span>
+                        <span class="sdv">${escHtml(member.paymentRef || 'N/A')}</span>
                     </div>
                     ${member.membershipId ? `
                     <div class="status-detail-item full-width">
                         <span class="sdl">Membership ID</span>
-                        <span class="sdv membership-id-highlight">${member.membershipId}</span>
+                        <span class="sdv membership-id-highlight">${escHtml(member.membershipId)}</span>
                     </div>` : ''}
                 </div>
             `;
@@ -409,7 +419,7 @@
 
         // Populate card
         document.getElementById('card-name').textContent = member.fullName;
-        document.getElementById('card-institution').textContent = member.institutionType;
+        document.getElementById('card-institution').textContent = member.institutionName || member.institutionType;
         document.getElementById('card-district').textContent = member.district;
         document.getElementById('card-email').textContent = member.email;
         document.getElementById('card-gender').textContent = member.gender;
@@ -556,5 +566,12 @@
             }
         });
     });
+
+    function escHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
 
 })();
