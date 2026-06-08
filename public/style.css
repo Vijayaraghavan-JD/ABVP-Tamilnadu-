@@ -1017,11 +1017,13 @@ body {
 /* ── About, Inspiration, Contact Sections ──────────────────── */
 .about-box {
     background: white;
-    padding: 30px;
+    padding: 40px;
     border-radius: 12px;
     box-shadow: var(--shadow-soft);
     font-size: 1.1rem;
     color: var(--text-muted);
+    text-align: justify;
+    line-height: 1.8;
 }
 
 .about-box p+p {
@@ -1053,8 +1055,7 @@ body {
 
 .insp-img {
     width: 100%;
-    height: auto;
-    object-fit: contain;
+    height: 300px;
     border-radius: 10px;
     margin-bottom: 20px;
 }
