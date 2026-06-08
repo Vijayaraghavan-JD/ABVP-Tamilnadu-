@@ -814,14 +814,15 @@ body {
 
 .membership-card-wrapper {
     position: relative;
-    width: 900px;
-    max-width: 100%;
+    width: 100%;
+    max-width: 900px;
     aspect-ratio: 16 / 9;
     border-radius: 24px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    margin: 30px 0;
+    margin: 30px auto;
     background: #ffffff;
+    container-type: inline-size;
 }
 
 /* Background Image */
@@ -859,27 +860,27 @@ body {
 .member-details {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.88cqi;
     width: 50%;
     position: absolute;
-    left: 40px;
-    top: 175px;
+    left: 4.44%;
+    top: 34.56%;
     z-index: 10;
 }
 
 .detail-item {
     display: flex;
     align-items: center;
-    gap: 15px;
-    font-size: 0.85rem;
+    gap: 1.66cqi;
+    font-size: 1.5cqi;
 }
 
 .detail-label {
     font-weight: 700;
     color: #ff9900;
-    min-width: 145px;
+    min-width: 16.1cqi;
     white-space: nowrap;
-    font-size: 0.9rem;
+    font-size: 1.6cqi;
 }
 
 .detail-value {
@@ -887,19 +888,19 @@ body {
     color: #333;
     font-weight: 600;
     padding-bottom: 2px;
-    min-width: 140px;
-    font-size: 0.85rem;
+    min-width: 15.5cqi;
+    font-size: 1.51cqi;
 }
 
 /* Member Photo Box (Right Side - Top) */
 .member-photo-box {
     position: absolute;
-    right: 50px;
-    top: 150px;
-    width: 150px;
-    height: 190px;
-    border: 5px solid #ff9900;
-    border-radius: 12px;
+    right: 5.55%;
+    top: 29.62%;
+    width: 16.66%;
+    height: 37.53%;
+    border: max(2px, 0.55cqi) solid #ff9900;
+    border-radius: max(4px, 1.33cqi);
     overflow: hidden;
     background: #f0f0f0;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
@@ -915,14 +916,14 @@ body {
 /* QR Code Box (Right Side - Bottom, Outside Photo) */
 .member-qr-box {
     position: absolute;
-    right: 70px;
-    bottom: 45px;
-    width: 110px;
-    height: 110px;
-    border: 4px solid #ff9900;
-    border-radius: 8px;
+    right: 7.77%;
+    bottom: 8.88%;
+    width: 12.22%;
+    height: 21.72%;
+    border: max(2px, 0.44cqi) solid #ff9900;
+    border-radius: max(3px, 0.88cqi);
     background: white;
-    padding: 5px;
+    padding: max(2px, 0.55cqi);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -963,48 +964,6 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
-    .membership-card-wrapper {
-        width: 100%;
-        aspect-ratio: auto;
-        min-height: 550px;
-    }
-
-    .member-details {
-        width: 55%;
-        left: 30px;
-        top: 155px;
-        gap: 6px;
-    }
-
-    .detail-item {
-        font-size: 0.8rem;
-    }
-
-    .detail-label {
-        min-width: 130px;
-        font-size: 0.85rem;
-    }
-
-    .detail-value {
-        font-size: 0.8rem;
-        min-width: 120px;
-    }
-
-    .member-photo-box {
-        width: 110px;
-        height: 140px;
-        right: 30px;
-        top: 105px;
-    }
-
-    .member-qr-box {
-        width: 80px;
-        height: 80px;
-        right: 45px;
-        bottom: 30px;
-    }
-}
 
 /* Footer */
 .footer {
@@ -1157,18 +1116,7 @@ body {
         font-size: 1.2rem;
     }
 
-    .membership-card-wrapper {
-        width: 100%;
-        font-size: 2.5vw;
-    }
 
-    .card-details {
-        font-size: 1em;
-    }
-
-    .detail-label {
-        min-width: 80px;
-    }
 
     .status-input-group {
         flex-direction: column;
