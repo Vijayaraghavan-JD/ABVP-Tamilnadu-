@@ -476,7 +476,15 @@
                 scale: 2,
                 useCORS: true,
                 backgroundColor: '#ffffff',
-                logging: false
+                logging: false,
+                windowWidth: 1000,
+                onclone: (clonedDoc) => {
+                    const clonedCard = clonedDoc.getElementById('membership-card-render');
+                    if (clonedCard) {
+                        clonedCard.style.width = '900px';
+                        clonedCard.style.maxWidth = '900px';
+                    }
+                }
             });
             const imgData = canvas.toDataURL('image/png');
             const link = document.createElement('a');
@@ -505,7 +513,15 @@
                 scale: 2,
                 useCORS: true,
                 backgroundColor: '#ffffff',
-                logging: false
+                logging: false,
+                windowWidth: 1000,
+                onclone: (clonedDoc) => {
+                    const clonedCard = clonedDoc.getElementById('membership-card-render');
+                    if (clonedCard) {
+                        clonedCard.style.width = '900px';
+                        clonedCard.style.maxWidth = '900px';
+                    }
+                }
             });
 
             const { jsPDF } = window.jspdf;
