@@ -103,12 +103,14 @@
     }
 
     // ── Photo Upload Preview & Base64 Compression ───────────────
-    function compressImageFile(file, maxDimension = 600, quality = 0.75) {
+    function compressImageFile(file, maxDimension = 500, quality = 0.7) {
         return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = function (e) {
+            if (!file) return reject(new Error('No file provided'));
+
+            const processImg = (imgSource, isObjectUrl = false) => {
                 const img = new Image();
                 img.onload = function () {
+                    if (isObjectUrl) URL.revokeObjectURL(imgSource);
                     let width = img.width;
                     let height = img.height;
 
@@ -132,15 +134,79 @@
                     resolve(dataUrl);
                 };
                 img.onerror = function (err) {
+                    if (isObjectUrl) URL.revokeObjectURL(imgSource);
+                    fallbackFileReader();
+                };
+                img.src = imgSource;
+            };
+
+            const fallbackFileReader = () => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    processImg(e.target.result, false);
+                };
+                reader.onerror = function (err) {
                     reject(err);
                 };
-                img.src = e.target.result;
+                reader.readAsDataURL(file);
             };
-            reader.onerror = function (err) {
-                reject(err);
-            };
-            reader.readAsDataURL(file);
+
+            try {
+                if (window.URL && window.URL.createObjectURL) {
+                    const objectUrl = URL.createObjectURL(file);
+                    processImg(objectUrl, true);
+                } else {
+                    fallbackFileReader();
+                }
+            } catch (e) {
+                fallbackFileReader();
+            }
         });
+    }
+
+    async function ensureSmallPhotoData(file, currentBase64) {
+        let photoData = currentBase64;
+        if (file) {
+            try {
+                photoData = await compressImageFile(file, 450, 0.65);
+            } catch (err) {
+                console.warn('Mobile compression retry:', err);
+            }
+        }
+
+        if (photoData && photoData.length > 350000) {
+            try {
+                const img = new Image();
+                await new Promise((res) => {
+                    img.onload = res;
+                    img.onerror = res;
+                    img.src = photoData;
+                });
+                if (img.width && img.height) {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 350;
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    photoData = canvas.toDataURL('image/jpeg', 0.5);
+                }
+            } catch (e) {
+                console.warn('Secondary reduction failed:', e);
+            }
+        }
+        return photoData;
     }
 
     if (photoInput) {
@@ -148,7 +214,7 @@
             const file = e.target.files[0];
             if (file) {
                 try {
-                    compressedPhotoData = await compressImageFile(file, 600, 0.75);
+                    compressedPhotoData = await compressImageFile(file, 500, 0.7);
                     if (photoPreview) {
                         photoPreview.src = compressedPhotoData;
                         photoPreview.classList.remove('hidden');
@@ -204,6 +270,9 @@
             const course = document.getElementById('courseDetails').value.trim();
             const gender = document.getElementById('gender').value;
             const blood = document.getElementById('bloodGroup').value.trim();
+
+            const uploadedFile = photoInput && photoInput.files ? photoInput.files[0] : null;
+            compressedPhotoData = await ensureSmallPhotoData(uploadedFile, compressedPhotoData);
 
             if (!compressedPhotoData) {
                 showToast('Please upload your photo', 'error');
