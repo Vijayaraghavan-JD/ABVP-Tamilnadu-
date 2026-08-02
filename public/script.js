@@ -13,20 +13,13 @@
     const navLinks = document.getElementById('nav-links');
     const slides = document.querySelectorAll('.carousel-slide');
 
-    // Registration Form Inputs
+    // Form Elements
     const membershipForm = document.getElementById('membership-form');
-    const fullNameInput = document.getElementById('fullName');
     const institutionType = document.getElementById('institutionType');
-    const institutionNameInput = document.getElementById('institutionName');
-    const courseDetailsInput = document.getElementById('courseDetails');
-    const districtInput = document.getElementById('district');
-    const emailInput = document.getElementById('email');
-    const genderSelect = document.getElementById('gender');
-    const bloodGroupInput = document.getElementById('bloodGroup');
-    const phoneInput = document.getElementById('phone');
+    const submitBtn = document.getElementById('submit-btn');
     const photoInput = document.getElementById('photoInput');
     const photoPreview = document.getElementById('photoPreview');
-    const submitBtn = document.getElementById('submit-btn');
+    const phoneInput = document.getElementById('phone');
 
     // Views & Overlay Elements
     const mainContent = document.getElementById('main-content');
@@ -38,7 +31,7 @@
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingText = document.getElementById('loading-text');
 
-    // Status check elements
+    // Status Check Elements
     const statusEmailInput = document.getElementById('statusEmail');
     const checkStatusBtn = document.getElementById('checkStatusBtn');
     const statusResult = document.getElementById('status-result');
@@ -46,10 +39,10 @@
     // Set current year
     if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-    // Compressed photo data URL (set on upload)
+    // Compressed photo base64
     let compressedPhotoData = '';
 
-    // ── Phone Input Restriction (Numbers only, Max 10 digits) ────
+    // ── Restrict Phone Input (Numbers only, Max 10 digits) ────────
     if (phoneInput) {
         phoneInput.addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
@@ -82,7 +75,6 @@
             }
         });
 
-        // Close mobile menu on link click
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.addEventListener('click', () => {
                 navLinks.classList.remove('active');
@@ -116,7 +108,6 @@
             const file = e.target.files[0];
             if (file) {
                 try {
-                    // Compress the image for Firestore storage
                     compressedPhotoData = await compressImage(file, 400, 500, 0.7);
                     if (photoPreview) {
                         photoPreview.src = compressedPhotoData;
@@ -126,7 +117,6 @@
                     if (cardPhotoEl) cardPhotoEl.src = compressedPhotoData;
                 } catch (err) {
                     console.error('Image compression error:', err);
-                    // Fallback: use raw FileReader
                     const reader = new FileReader();
                     reader.onload = function (event) {
                         compressedPhotoData = event.target.result;
@@ -143,7 +133,6 @@
         });
     }
 
-    // Image compression helper
     function compressImage(file, maxWidth, maxHeight, quality) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -173,7 +162,6 @@
 
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-
                     resolve(canvas.toDataURL('image/jpeg', quality));
                 };
                 img.onerror = (error) => reject(error);
@@ -214,76 +202,23 @@
         membershipForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const fullName = fullNameInput ? fullNameInput.value.trim() : '';
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const phone = document.getElementById('phone').value.trim();
+            const district = document.getElementById('district').value.trim();
             const type = institutionType ? institutionType.value : '';
-            const institutionName = institutionNameInput ? institutionNameInput.value.trim() : '';
-            const courseDetails = courseDetailsInput ? courseDetailsInput.value.trim() : '';
-            const district = districtInput ? districtInput.value.trim() : '';
-            const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
-            const gender = genderSelect ? genderSelect.value : '';
-            const bloodGroup = bloodGroupInput ? bloodGroupInput.value.trim() : '';
-            const phone = phoneInput ? phoneInput.value.trim() : '';
-
-            // Strict Validation Checks
-            if (!fullName) {
-                showToast('Please enter your Full Name with Initial', 'error');
-                if (fullNameInput) fullNameInput.focus();
-                return;
-            }
-
-            if (!type) {
-                showToast('Please select School / College category', 'error');
-                if (institutionType) institutionType.focus();
-                return;
-            }
-
-            if (!institutionName) {
-                showToast('Please enter your College / School Name', 'error');
-                if (institutionNameInput) institutionNameInput.focus();
-                return;
-            }
-
-            if (!courseDetails) {
-                showToast('Please enter your Course Details', 'error');
-                if (courseDetailsInput) courseDetailsInput.focus();
-                return;
-            }
-
-            if (!district) {
-                showToast('Please enter your District', 'error');
-                if (districtInput) districtInput.focus();
-                return;
-            }
-
-            // Email validation regex
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!email || !emailPattern.test(email)) {
-                showToast('Please enter a valid email address (e.g., name@gmail.com)', 'error');
-                if (emailInput) emailInput.focus();
-                return;
-            }
-
-            if (!gender) {
-                showToast('Please select your Gender', 'error');
-                if (genderSelect) genderSelect.focus();
-                return;
-            }
-
-            if (!bloodGroup) {
-                showToast('Please enter your Blood Group', 'error');
-                if (bloodGroupInput) bloodGroupInput.focus();
-                return;
-            }
-
-            // Phone validation (exactly 10 digits)
-            if (!phone || phone.length !== 10 || !/^[0-9]{10}$/.test(phone)) {
-                showToast('Please enter a valid 10-digit mobile number', 'error');
-                if (phoneInput) phoneInput.focus();
-                return;
-            }
+            const instName = document.getElementById('institutionName').value.trim();
+            const course = document.getElementById('courseDetails').value.trim();
+            const gender = document.getElementById('gender').value;
+            const blood = document.getElementById('bloodGroup').value.trim();
 
             if (!compressedPhotoData) {
-                showToast('Please upload your image', 'error');
+                showToast('Please upload your photo', 'error');
+                return;
+            }
+
+            if (phone.length !== 10) {
+                showToast('Please enter a valid 10-digit phone number', 'error');
                 return;
             }
 
@@ -304,29 +239,30 @@
 
                 showLoading('Submitting your registration...');
 
-                // Calculate validity: Valid until May 31st of next academic year
+                // Calculate validity date (May 31st of next academic year)
                 const today = new Date();
                 const currentYear = today.getFullYear();
-                const currentMonth = today.getMonth(); // 0-11, so 5 = June
+                const currentMonth = today.getMonth();
 
                 let validUntilDate;
-                if (currentMonth >= 5) { // June to December
-                    validUntilDate = new Date(currentYear + 1, 4, 31); // Month is 0-indexed, so 4 = May
-                } else { // January to May
+                if (currentMonth >= 5) {
+                    validUntilDate = new Date(currentYear + 1, 4, 31);
+                } else {
                     validUntilDate = new Date(currentYear, 4, 31);
                 }
 
-                // Build member document
+                // Build member document compatible with admin panel & check status
                 const memberData = {
                     fullName: fullName,
                     email: email,
                     phone: phone,
                     district: district,
                     institutionType: type,
-                    institutionName: institutionName,
-                    courseDetails: courseDetails,
+                    institutionName: instName,
+                    collegeName: instName,
+                    courseDetails: course,
                     gender: gender,
-                    bloodGroup: bloodGroup,
+                    bloodGroup: blood || 'N/A',
                     photoBase64: compressedPhotoData,
                     status: 'pending_review',
                     membershipId: null,
@@ -376,8 +312,7 @@
     async function checkRegistrationStatus() {
         const email = statusEmailInput ? statusEmailInput.value.trim().toLowerCase() : '';
 
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!email || !emailPattern.test(email)) {
+        if (!email || !email.includes('@')) {
             showToast('Please enter a valid email address', 'error');
             return;
         }
@@ -480,7 +415,7 @@
                     </div>
                     <div class="status-detail-item">
                         <span class="sdl">Institution Name</span>
-                        <span class="sdv">${escHtml(member.institutionName || 'N/A')}</span>
+                        <span class="sdv">${escHtml(member.institutionName || member.collegeName || 'N/A')}</span>
                     </div>
                     <div class="status-detail-item">
                         <span class="sdl">Course Details</span>
@@ -532,7 +467,6 @@
         const member = window._activeMember;
         if (!member) return;
 
-        // Populate card
         const elName = document.getElementById('card-name');
         const elInst = document.getElementById('card-institution');
         const elDist = document.getElementById('card-district');
@@ -543,7 +477,7 @@
         const elId = document.getElementById('card-id');
 
         if (elName) elName.textContent = member.fullName;
-        if (elInst) elInst.textContent = member.institutionName || member.institutionType;
+        if (elInst) elInst.textContent = member.institutionName || member.collegeName || member.institutionType;
         if (elDist) elDist.textContent = member.district;
         if (elEmail) elEmail.textContent = member.email;
         if (elGender) elGender.textContent = member.gender;
@@ -551,13 +485,11 @@
         if (elPhone) elPhone.textContent = member.phone;
         if (elId) elId.textContent = member.membershipId || 'N/A';
 
-        // Photo
         const elPhoto = document.getElementById('card-photo');
         if (member.photoBase64 && elPhoto) {
             elPhoto.src = member.photoBase64;
         }
 
-        // Generate QR Code for verification
         const qrContainer = document.getElementById('card-qr-code');
         if (qrContainer) {
             qrContainer.innerHTML = '';
@@ -574,7 +506,6 @@
             }
         }
 
-        // Switch to card view
         if (mainContent) mainContent.classList.add('hidden');
         if (cardView) cardView.classList.remove('hidden');
         window.scrollTo(0, 0);
@@ -662,7 +593,7 @@
             const pdf = new jsPDF({
                 orientation: 'landscape',
                 unit: 'mm',
-                format: [210, 148] // A5 landscape
+                format: [210, 148]
             });
 
             const imgData = canvas.toDataURL('image/png');
