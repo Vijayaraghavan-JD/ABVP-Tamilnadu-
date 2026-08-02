@@ -13,7 +13,7 @@
     const navLinks = document.getElementById('nav-links');
     const slides = document.querySelectorAll('.carousel-slide');
 
-    // Form Elements
+    // Registration Form Elements
     const membershipForm = document.getElementById('membership-form');
     const institutionType = document.getElementById('institutionType');
     const submitBtn = document.getElementById('submit-btn');
@@ -36,7 +36,7 @@
     const checkStatusBtn = document.getElementById('checkStatusBtn');
     const statusResult = document.getElementById('status-result');
 
-    // Set current year
+    // Set current year in footer
     if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
     // Compressed photo base64
@@ -49,7 +49,7 @@
         });
     }
 
-    // ── Navbar Scrolled & Mobile Menu ────────────────────────────
+    // ── Navbar Scrolled & Mobile Menu Toggle ──────────────────────
     window.addEventListener('scroll', () => {
         if (navbar) {
             if (window.scrollY > 50) {
@@ -102,7 +102,7 @@
         setInterval(nextSlide, slideInterval);
     }
 
-    // ── Photo Upload Preview & Compression ──────────────────────
+    // ── Photo Upload Preview & Base64 Generation ────────────────
     if (photoInput) {
         photoInput.addEventListener('change', async function (e) {
             const file = e.target.files[0];
@@ -116,7 +116,7 @@
                     const cardPhotoEl = document.getElementById('card-photo');
                     if (cardPhotoEl) cardPhotoEl.src = compressedPhotoData;
                 } catch (err) {
-                    console.error('Image compression error:', err);
+                    console.error('Image compression fallback:', err);
                     const reader = new FileReader();
                     reader.onload = function (event) {
                         compressedPhotoData = event.target.result;
@@ -133,44 +133,7 @@
         });
     }
 
-    function compressImage(file, maxWidth, maxHeight, quality) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > height) {
-                        if (width > maxWidth) {
-                            height = Math.round((height * maxWidth) / width);
-                            width = maxWidth;
-                        }
-                    } else {
-                        if (height > maxHeight) {
-                            width = Math.round((width * maxHeight) / height);
-                            height = maxHeight;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', quality));
-                };
-                img.onerror = (error) => reject(error);
-            };
-            reader.onerror = (error) => reject(error);
-        });
-    }
-
-    // ── Loading Overlay ─────────────────────────────────────────
+    // ── Loading Overlay Helper ──────────────────────────────────
     function showLoading(message) {
         if (loadingText) loadingText.textContent = message || 'Processing...';
         if (loadingOverlay) loadingOverlay.classList.remove('hidden');
@@ -180,7 +143,7 @@
         if (loadingOverlay) loadingOverlay.classList.add('hidden');
     }
 
-    // ── Toast Notification ──────────────────────────────────────
+    // ── Toast Notification Helper ───────────────────────────────
     function showToast(message, type = 'success') {
         if (!toast || !toastMessage || !toastIcon) return;
         toastMessage.textContent = message;
@@ -197,7 +160,7 @@
         }, 4000);
     }
 
-    // ── Form Submission → Firestore ─────────────────────────────
+    // ── Registration Form Submission → Firestore ────────────────
     if (membershipForm) {
         membershipForm.addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -218,14 +181,14 @@
             }
 
             if (phone.length !== 10) {
-                showToast('Please enter a valid 10-digit phone number', 'error');
+                showToast('Please enter a valid 10-digit mobile number', 'error');
                 return;
             }
 
             showLoading('Checking for existing registration...');
 
             try {
-                // Check for duplicate email
+                // Check if email is already registered
                 const existingQuery = await db.collection('members')
                     .where('email', '==', email)
                     .limit(1)
@@ -239,19 +202,19 @@
 
                 showLoading('Submitting your registration...');
 
-                // Calculate validity date (May 31st of next academic year)
+                // Academic year validity date (May 31st)
                 const today = new Date();
                 const currentYear = today.getFullYear();
                 const currentMonth = today.getMonth();
 
                 let validUntilDate;
-                if (currentMonth >= 5) {
+                if (currentMonth >= 5) { // June to December
                     validUntilDate = new Date(currentYear + 1, 4, 31);
-                } else {
+                } else { // January to May
                     validUntilDate = new Date(currentYear, 4, 31);
                 }
 
-                // Build member document compatible with admin panel & check status
+                // Member document schema matching Firestore & Admin Panel
                 const memberData = {
                     fullName: fullName,
                     email: email,
@@ -273,13 +236,13 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
-                // Save to Firestore
+                // Add to Firestore collection
                 await db.collection('members').add(memberData);
 
                 hideLoading();
-                showToast('Registration submitted successfully! Your application is under review.');
+                showToast('Registration submitted successfully! Your application is under review.', 'success');
 
-                // Reset form
+                // Reset form & photo preview
                 membershipForm.reset();
                 if (photoPreview) {
                     photoPreview.classList.add('hidden');
@@ -287,7 +250,7 @@
                 }
                 compressedPhotoData = '';
 
-                // Scroll to status check section
+                // Scroll down to Check Status section after 2 seconds
                 setTimeout(() => {
                     const statusSec = document.getElementById('status-check');
                     if (statusSec) statusSec.scrollIntoView({ behavior: 'smooth' });
@@ -301,8 +264,10 @@
         });
     }
 
-    // ── Status Check ────────────────────────────────────────────
-    if (checkStatusBtn) checkStatusBtn.addEventListener('click', checkRegistrationStatus);
+    // ── Check Registration Status ───────────────────────────────
+    if (checkStatusBtn) {
+        checkStatusBtn.addEventListener('click', checkRegistrationStatus);
+    }
     if (statusEmailInput) {
         statusEmailInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') checkRegistrationStatus();
