@@ -135,31 +135,76 @@
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         if (navEl) navEl.classList.add('active');
 
-        // Close mobile sidebar
-        document.getElementById('sidebar').classList.remove('open');
+        // Close mobile sidebar and overlay
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (sidebar) sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('active');
     };
 
     window.toggleSidebar = function () {
-        document.getElementById('sidebar').classList.toggle('open');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (sidebar) {
+            const isOpen = sidebar.classList.toggle('open');
+            if (overlay) {
+                if (isOpen) {
+                    overlay.classList.add('active');
+                } else {
+                    overlay.classList.remove('active');
+                }
+            }
+        }
     };
 
-    // ── Members Listener (Real-time) ────────────────────────────
+    // ── Members Listener (Real-time with Fallback) ──────────────
     function startMembersListener() {
-        unsubscribeMembers = db.collection('members')
-            .orderBy('createdAt', 'desc')
-            .onSnapshot((snapshot) => {
-                allMembers = [];
-                snapshot.forEach(doc => {
-                    allMembers.push({ id: doc.id, ...doc.data() });
-                });
-
-                updateAnalytics();
-                renderRecentTable();
-                renderMembersTable();
-                renderPendingList();
-            }, (err) => {
-                console.error('Members listener error:', err);
+        const handleMembersSnapshot = (snapshot) => {
+            allMembers = [];
+            snapshot.forEach(doc => {
+                allMembers.push({ id: doc.id, ...doc.data() });
             });
+
+            // Client-side sort by createdAt descending for consistent order across browsers
+            allMembers.sort((a, b) => {
+                const getMs = (val) => {
+                    if (!val) return 0;
+                    if (val.toMillis) return val.toMillis();
+                    if (val.seconds) return val.seconds * 1000;
+                    const parsed = new Date(val).getTime();
+                    return isNaN(parsed) ? 0 : parsed;
+                };
+                return getMs(b.createdAt) - getMs(a.createdAt);
+            });
+
+            updateAnalytics();
+            renderRecentTable();
+            renderMembersTable();
+            renderPendingList();
+        };
+
+        const fallbackSimpleQuery = () => {
+            console.warn('Falling back to direct collection query without orderBy');
+            db.collection('members').onSnapshot(handleMembersSnapshot, (err) => {
+                console.error('Fallback members snapshot error:', err);
+                // Last-ditch one-time fetch if snapshot listener has browser permission/network issues
+                db.collection('members').get().then(handleMembersSnapshot).catch(e => {
+                    console.error('Direct members fetch error:', e);
+                });
+            });
+        };
+
+        try {
+            unsubscribeMembers = db.collection('members')
+                .orderBy('createdAt', 'desc')
+                .onSnapshot(handleMembersSnapshot, (err) => {
+                    console.warn('Ordered query onSnapshot error, executing fallback:', err);
+                    fallbackSimpleQuery();
+                });
+        } catch (e) {
+            console.warn('startMembersListener exception:', e);
+            fallbackSimpleQuery();
+        }
     }
 
     // ── Analytics ───────────────────────────────────────────────
@@ -168,9 +213,6 @@
         const pending = allMembers.filter(m => m.status === 'pending_review').length;
         const active = allMembers.filter(m => m.status === 'active').length;
         const rejected = allMembers.filter(m => m.status === 'rejected').length;
-        const revenue = allMembers
-            .filter(m => m.status === 'active')
-            .reduce((sum, m) => sum + (m.feeAmount || 0), 0);
 
         const genderCounts = { male: 0, female: 0, other: 0 };
         allMembers.forEach(m => {
@@ -183,7 +225,6 @@
         document.getElementById('stat-pending').textContent = pending;
         document.getElementById('stat-active').textContent = active;
         document.getElementById('stat-rejected').textContent = rejected;
-        document.getElementById('stat-revenue').textContent = '₹' + revenue;
         document.getElementById('stat-gender-ratio').textContent =
             `${genderCounts.male} / ${genderCounts.female} / ${genderCounts.other}`;
 
@@ -195,59 +236,74 @@
     // ── Recent Table (Overview) ─────────────────────────────────
     function renderRecentTable() {
         const tbody = document.getElementById('recent-table-body');
+        if (!tbody) return;
         const recent = allMembers.slice(0, 10);
 
         if (recent.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-row">No registrations yet</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-row">No registrations yet</td></tr>';
             return;
         }
 
-        tbody.innerHTML = recent.map(m => `
-            <tr>
-                <td style="text-transform:capitalize">${escHtml(m.fullName)}</td>
-                <td>${escHtml(m.email)}</td>
-                <td style="text-transform:capitalize">${escHtml(m.institutionType)}</td>
-                <td><span class="status-badge status-${m.status}">${statusLabel(m.status)}</span></td>
-                <td>${m.createdAt ? formatDate(m.createdAt) : 'N/A'}</td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = recent.map(m => {
+            try {
+                return `
+                    <tr>
+                        <td style="text-transform:capitalize">${escHtml(m.fullName || 'N/A')}</td>
+                        <td>${escHtml(m.email || 'N/A')}</td>
+                        <td style="text-transform:capitalize">${escHtml(m.institutionType || 'N/A')}</td>
+                        <td><span class="status-badge status-${m.status}">${statusLabel(m.status)}</span></td>
+                        <td>${formatDate(m.createdAt)}</td>
+                        <td><button class="btn-view btn-remove-recent" onclick="removeMember('${m.id}', '${escHtml(m.fullName || '')}')" title="Remove">✕ Remove</button></td>
+                    </tr>
+                `;
+            } catch (err) {
+                console.error('Error rendering recent table row:', err);
+                return '';
+            }
+        }).join('');
     }
 
     // ── All Members Table ───────────────────────────────────────
     function renderMembersTable(filter = null) {
         const tbody = document.getElementById('members-table-body');
+        if (!tbody) return;
         let members = filter ? filter : allMembers;
 
         if (members.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" class="empty-row">No members found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="12" class="empty-row">No members found</td></tr>';
             return;
         }
 
         tbody.innerHTML = members.map(m => {
-            let validityStatus = '-';
-            if (m.validUntil) {
-                const validUntilDate = m.validUntil.toDate ? m.validUntil.toDate() : new Date(m.validUntil);
-                const today = new Date();
-                validityStatus = today > validUntilDate ?
-                    `<span style="color:red; font-weight:bold;">Expired</span>` :
-                    `<span style="color:green; font-weight:bold;">Valid</span>`;
-            }
+            try {
+                let validityStatus = '-';
+                if (m.validUntil) {
+                    const validUntilDate = m.validUntil.toDate ? m.validUntil.toDate() : new Date(m.validUntil);
+                    const today = new Date();
+                    validityStatus = today > validUntilDate ?
+                        `<span style="color:red; font-weight:bold;">Expired</span>` :
+                        `<span style="color:green; font-weight:bold;">Valid</span>`;
+                }
 
-            return `
-                <tr>
-                    <td><img src="${m.photoBase64 || ''}" alt="" class="table-photo"></td>
-                    <td style="text-transform:capitalize">${escHtml(m.fullName)}</td>
-                    <td style="font-size:0.8rem">${escHtml(m.email)}</td>
-                    <td>${escHtml(m.phone)}</td>
-                    <td style="text-transform:capitalize">${escHtml(m.institutionType)}</td>
-                    <td style="text-transform:capitalize">${escHtml(m.district)}</td>
-                    <td style="font-size:0.8rem">${escHtml(m.paymentRef || '-')}</td>
-                    <td><span class="status-badge status-${m.status}">${statusLabel(m.status)}</span></td>
-                    <td style="font-size:0.8rem">${m.validUntil ? formatDate(m.validUntil) : '-'}</td>
-                    <td>${validityStatus}</td>
-                    <td><button class="btn-view" onclick="openMemberModal('${m.id}')">View</button></td>
-                </tr>
-            `;
+                return `
+                    <tr>
+                        <td><img src="${m.photoBase64 || ''}" alt="" class="table-photo"></td>
+                        <td style="text-transform:capitalize">${escHtml(m.fullName || 'N/A')}</td>
+                        <td style="font-size:0.8rem">${escHtml(m.email || 'N/A')}</td>
+                        <td>${escHtml(m.phone || 'N/A')}</td>
+                        <td style="text-transform:capitalize">${escHtml(m.institutionType || 'N/A')}</td>
+                        <td style="text-transform:capitalize">${escHtml(m.collegeName || '-')}</td>
+                        <td style="text-transform:capitalize">${escHtml(m.district || '-')}</td>
+                        <td><span class="status-badge status-${m.status}">${statusLabel(m.status)}</span></td>
+                        <td style="font-size:0.8rem">${formatDate(m.validUntil)}</td>
+                        <td>${validityStatus}</td>
+                        <td><button class="btn-view" onclick="openMemberModal('${m.id}')">View</button></td>
+                    </tr>
+                `;
+            } catch (err) {
+                console.error('Error rendering member table row:', err);
+                return '';
+            }
         }).join('');
     }
 
@@ -281,24 +337,17 @@
                         <span class="pcd-value">${escHtml(m.institutionType)}</span>
                     </div>
                     <div class="pcd-item">
-                        <span class="pcd-label">Institution Name</span>
-                        <span class="pcd-value">${escHtml(m.institutionName || '-')}</span>
+                        <span class="pcd-label">College/School</span>
+                        <span class="pcd-value">${escHtml(m.collegeName || '-')}</span>
                     </div>
                     <div class="pcd-item">
-                        <span class="pcd-label">Course Details</span>
+                        <span class="pcd-label">Course</span>
+                        <span class="pcd-value">${escHtml(m.courseDetails || '-')}</span>
                         <span class="pcd-value">${escHtml(m.courseDetails || '-')}</span>
                     </div>
                     <div class="pcd-item">
                         <span class="pcd-label">District</span>
                         <span class="pcd-value">${escHtml(m.district)}</span>
-                    </div>
-                    <div class="pcd-item">
-                        <span class="pcd-label">Fee</span>
-                        <span class="pcd-value">₹${m.feeAmount || 0}</span>
-                    </div>
-                    <div class="pcd-item">
-                        <span class="pcd-label">Payment Ref</span>
-                        <span class="pcd-value">${escHtml(m.paymentRef || '-')}</span>
                     </div>
                 </div>
                 <div class="pending-card-actions">
@@ -326,23 +375,12 @@
         document.getElementById('modal-email').textContent = member.email;
         document.getElementById('modal-phone').textContent = member.phone;
         document.getElementById('modal-institution').textContent = member.institutionType;
-        document.getElementById('modal-institution-name').textContent = member.institutionName || 'N/A';
-        document.getElementById('modal-course-details').textContent = member.courseDetails || 'N/A';
+        document.getElementById('modal-college-name').textContent = member.collegeName || 'N/A';
+        document.getElementById('modal-course').textContent = member.courseDetails || 'N/A';
         document.getElementById('modal-district').textContent = member.district;
         document.getElementById('modal-gender').textContent = member.gender;
         document.getElementById('modal-blood').textContent = member.bloodGroup || 'N/A';
-        document.getElementById('modal-fee').textContent = '₹' + (member.feeAmount || 0);
-        document.getElementById('modal-payment-ref').textContent = member.paymentRef || 'N/A';
         document.getElementById('modal-created').textContent = member.createdAt ? formatDate(member.createdAt) : 'N/A';
-
-        // Membership ID
-        const midRow = document.getElementById('modal-membership-id-row');
-        if (member.membershipId) {
-            midRow.style.display = '';
-            document.getElementById('modal-membership-id').textContent = member.membershipId;
-        } else {
-            midRow.style.display = 'none';
-        }
 
         // Reviewed by
         const reviewRow = document.getElementById('modal-reviewed-row');
@@ -442,7 +480,7 @@
             });
 
             closeMemberModal();
-            showAdminToast('Member approved! Membership ID: ' + membershipId + ' | Valid until: ' + validityDateInput);
+            showAdminToast('Member approved! Valid until: ' + validityDateInput);
 
         } catch (err) {
             console.error('Approval error:', err);
@@ -522,6 +560,8 @@
                     (m.fullName || '').toLowerCase().includes(search) ||
                     (m.email || '').toLowerCase().includes(search) ||
                     (m.district || '').toLowerCase().includes(search) ||
+                    (m.collegeName || '').toLowerCase().includes(search) ||
+                    (m.courseDetails || '').toLowerCase().includes(search) ||
                     (m.phone || '').includes(search) ||
                     (m.membershipId || '').toLowerCase().includes(search)
                 );
@@ -550,22 +590,19 @@
             return;
         }
 
-        const headers = ['Name', 'Email', 'Phone', 'Institution Type', 'Institution Name', 'Course Details', 'District', 'Gender', 'Blood Group', 'Fee', 'Payment Ref', 'Status', 'Membership ID', 'Registered On'];
+        const headers = ['Name', 'Email', 'Phone', 'Institution Type', 'College/School Name', 'Course Details', 'District', 'Gender', 'Blood Group', 'Status', 'Registered On'];
 
         const rows = allMembers.map(m => [
             m.fullName || '',
             m.email || '',
             m.phone || '',
             m.institutionType || '',
-            m.institutionName || '',
+            m.collegeName || '',
             m.courseDetails || '',
             m.district || '',
             m.gender || '',
             m.bloodGroup || '',
-            m.feeAmount || 0,
-            m.paymentRef || '',
             m.status || '',
-            m.membershipId || '',
             m.createdAt ? formatDate(m.createdAt) : ''
         ]);
 
@@ -665,6 +702,28 @@
     };
 
     // ── Helper Functions ────────────────────────────────────────
+    function formatDate(ts) {
+        if (!ts) return 'N/A';
+        try {
+            let d;
+            if (ts.toDate && typeof ts.toDate === 'function') {
+                d = ts.toDate();
+            } else if (ts.seconds) {
+                d = new Date(ts.seconds * 1000);
+            } else {
+                d = new Date(ts);
+            }
+            if (isNaN(d.getTime())) return 'N/A';
+            return d.toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        } catch (e) {
+            return 'N/A';
+        }
+    }
+
     function statusLabel(status) {
         const labels = {
             'pending_review': 'Pending',
@@ -690,6 +749,19 @@
             toast.classList.add('hidden');
         }, 4000);
     }
+
+    // ── Remove Member (from Recent Registrations) ─────────────
+    window.removeMember = async function (docId, memberName) {
+        if (!confirm('Are you sure you want to remove "' + memberName + '"? This action cannot be undone.')) return;
+
+        try {
+            await db.collection('members').doc(docId).delete();
+            showAdminToast('Member "' + memberName + '" removed successfully.');
+        } catch (err) {
+            console.error('Remove member error:', err);
+            showAdminToast('Error removing member. Check console.');
+        }
+    };
 
     // ── Keyboard Shortcuts ──────────────────────────────────────
     document.addEventListener('keydown', (e) => {

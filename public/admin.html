@@ -7,7 +7,7 @@
     <meta name="description" content="ABVP Tamil Nadu Admin Dashboard — Manage member registrations, approvals, and analytics.">
     <link rel="icon" type="image/png" href="assets/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="admin.css?v=3.0">
 </head>
 <body>
 
@@ -88,12 +88,16 @@
                 <button class="signout-btn" onclick="signOutAdmin()">Sign Out</button>
             </div>
         </aside>
+        <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
         <!-- Mobile Top Bar -->
         <div class="mobile-topbar">
-            <button class="mobile-sidebar-toggle" onclick="toggleSidebar()">☰</button>
-            <span>ABVP Admin</span>
-            <button class="signout-btn-mobile" onclick="signOutAdmin()">↪</button>
+            <button class="mobile-sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle Navigation">☰</button>
+            <div class="mobile-brand">
+                <img src="assets/logo.png" alt="ABVP" class="mobile-logo">
+                <span>ABVP Admin</span>
+            </div>
+            <button class="signout-btn-mobile" onclick="signOutAdmin()" title="Sign Out">Sign Out</button>
         </div>
 
         <!-- Main Content Area -->
@@ -132,13 +136,7 @@
                             <p>Rejected</p>
                         </div>
                     </div>
-                    <div class="analytics-card card-revenue">
-                        <div class="analytics-icon">💰</div>
-                        <div class="analytics-info">
-                            <h3 id="stat-revenue">₹0</h3>
-                            <p>Total Revenue (Active)</p>
-                        </div>
-                    </div>
+
                     <div class="analytics-card card-gender">
                         <div class="analytics-icon">📈</div>
                         <div class="analytics-info">
@@ -160,10 +158,11 @@
                                     <th>Type</th>
                                     <th>Status</th>
                                     <th>Date</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="recent-table-body">
-                                <tr><td colspan="5" class="empty-row">Loading...</td></tr>
+                                <tr><td colspan="6" class="empty-row">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -175,7 +174,7 @@
                 <h1 class="page-title">All Members</h1>
 
                 <div class="filters-bar">
-                    <input type="text" id="search-members" placeholder="Search by name, email, or district..." class="filter-input">
+                    <input type="text" id="search-members" placeholder="Search by name, email, district, or college name..." class="filter-input">
                     <select id="filter-status" class="filter-select">
                         <option value="all">All Status</option>
                         <option value="pending_review">Pending</option>
@@ -201,14 +200,16 @@
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>Type</th>
+                                    <th>College/School</th>
                                     <th>District</th>
-                                    <th>Payment Ref</th>
                                     <th>Status</th>
+                                    <th>Valid Until</th>
+                                    <th>Validity</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="members-table-body">
-                                <tr><td colspan="9" class="empty-row">Loading...</td></tr>
+                                <tr><td colspan="11" class="empty-row">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -296,12 +297,13 @@
                         <span class="miv" id="modal-institution"></span>
                     </div>
                     <div class="modal-info-item">
-                        <span class="mil">Institution Name</span>
-                        <span class="miv" id="modal-institution-name"></span>
+                        <span class="mil">College / School Name</span>
+                        <span class="miv" id="modal-college-name"></span>
                     </div>
                     <div class="modal-info-item">
                         <span class="mil">Course Details</span>
-                        <span class="miv" id="modal-course-details"></span>
+                        <span class="miv" id="modal-course"></span>
+                    </div>
                     </div>
                     <div class="modal-info-item">
                         <span class="mil">District</span>
@@ -316,20 +318,8 @@
                         <span class="miv" id="modal-blood"></span>
                     </div>
                     <div class="modal-info-item">
-                        <span class="mil">Fee Amount</span>
-                        <span class="miv" id="modal-fee"></span>
-                    </div>
-                    <div class="modal-info-item">
-                        <span class="mil">Payment Reference</span>
-                        <span class="miv" id="modal-payment-ref"></span>
-                    </div>
-                    <div class="modal-info-item">
                         <span class="mil">Registered On</span>
                         <span class="miv" id="modal-created"></span>
-                    </div>
-                    <div class="modal-info-item" id="modal-membership-id-row">
-                        <span class="mil">Membership ID</span>
-                        <span class="miv" id="modal-membership-id"></span>
                     </div>
                     <div class="modal-info-item" id="modal-reviewed-row">
                         <span class="mil">Reviewed By</span>
@@ -375,6 +365,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="admin.js"></script>
+    <script src="admin.js?v=5.0"></script>
 </body>
 </html>
