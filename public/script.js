@@ -177,22 +177,16 @@
             showLoading('Checking for existing registration...');
 
             try {
+                // Fetch members collection to check for existing email (index-independent)
+                const snapshot = await db.collection('members').get();
                 let alreadyRegistered = false;
 
-                try {
-                    const existingQuery = await db.collection('members').where('email', '==', email).limit(1).get();
-                    if (!existingQuery.empty) {
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.email && data.email.toLowerCase() === email) {
                         alreadyRegistered = true;
                     }
-                } catch (err) {
-                    const snapshot = await db.collection('members').get();
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        if (data.email && data.email.trim().toLowerCase() === email) {
-                            alreadyRegistered = true;
-                        }
-                    });
-                }
+                });
 
                 if (alreadyRegistered) {
                     hideLoading();
@@ -288,26 +282,16 @@
         }
 
         try {
+            // Index-independent query matching all documents
+            const snapshot = await db.collection('members').get();
             let foundMember = null;
 
-            try {
-                const snapshot = await db.collection('members').where('email', '==', email).limit(1).get();
-                if (!snapshot.empty) {
-                    foundMember = snapshot.docs[0].data();
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.email && data.email.toLowerCase() === email) {
+                    foundMember = data;
                 }
-            } catch (queryErr) {
-                console.warn('Indexed query fallback:', queryErr);
-            }
-
-            if (!foundMember) {
-                const snapshot = await db.collection('members').get();
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data.email && data.email.trim().toLowerCase() === email) {
-                        foundMember = data;
-                    }
-                });
-            }
+            });
 
             if (!foundMember) {
                 showStatusResult('not_found');
