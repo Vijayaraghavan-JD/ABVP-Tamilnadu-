@@ -13,95 +13,12 @@
     const navLinks = document.getElementById('nav-links');
     const slides = document.querySelectorAll('.carousel-slide');
     const institutionType = document.getElementById('institutionType');
-    const feeAmount = document.getElementById('fee-amount');
-    const qrContainer = document.getElementById('qr-container');
-    const paymentRefInput = document.getElementById('paymentRef');
     const submitBtn = document.getElementById('submit-btn');
     const photoInput = document.getElementById('photoInput');
     const photoPreview = document.getElementById('photoPreview');
     const membershipForm = document.getElementById('membership-form');
-    const mainContent = document.getElementById('main-content');
-    const cardView = document.getElementById('card-view');
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toast-message');
-    const toastIcon = document.getElementById('toast-icon');
-    const yearSpan = document.getElementById('year');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const loadingText = document.getElementById('loading-text');
 
-    // Status check elements
-    const statusEmailInput = document.getElementById('statusEmail');
-    const checkStatusBtn = document.getElementById('checkStatusBtn');
-    const statusResult = document.getElementById('status-result');
-
-    // Set current year
-    if (yearSpan) yearSpan.textContent = new Date().getFullYear();
-
-    // Compressed photo data URL (set on upload)
-    let compressedPhotoData = '';
-
-    // ── Navbar Scrolled & Mobile Menu ────────────────────────────
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
-        }
-    });
-
-    mobileMenuBtn.addEventListener('click', () => {
-        navLinks.classList.toggle('active');
-        const spans = mobileMenuBtn.querySelectorAll('span');
-        if (navLinks.classList.contains('active')) {
-            spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
-            spans[1].style.opacity = '0';
-            spans[2].style.transform = 'rotate(-45deg) translate(7px, -6px)';
-        } else {
-            spans[0].style.transform = 'none';
-            spans[1].style.opacity = '1';
-            spans[2].style.transform = 'none';
-        }
-    });
-
-    // Close mobile menu on link click
-    document.querySelectorAll('.nav-links a').forEach(link => {
-        link.addEventListener('click', () => {
-            navLinks.classList.remove('active');
-            const spans = mobileMenuBtn.querySelectorAll('span');
-            spans[0].style.transform = 'none';
-            spans[1].style.opacity = '1';
-            spans[2].style.transform = 'none';
-        });
-    });
-
-    // ── Hero Carousel ───────────────────────────────────────────
-    let currentSlide = 0;
-    const slideCount = slides.length;
-    const slideInterval = 5000;
-
-    function nextSlide() {
-        slides[currentSlide].classList.remove('active');
-        currentSlide = (currentSlide + 1) % slideCount;
-        slides[currentSlide].classList.add('active');
-    }
-
-    if (slideCount > 0) {
-        setInterval(nextSlide, slideInterval);
-    }
-
-    // ── Dynamic Fee Calculator ──────────────────────────────────
-    const feeMap = {
-        'school': { display: '₹2', value: 2 },
-        'college': { display: '₹5', value: 5 },
-        'teacher': { display: '₹100', value: 100 }
-    };
-
-    institutionType.addEventListener('change', (e) => {
-        const type = e.target.value;
-        if (feeMap[type]) {
-            feeAmount.textContent = feeMap[type].display;
-            qrContainer.classList.add('active');
-        }
+    institutionType.addEventListener('change', () => {
         validateForm();
     });
 
@@ -131,15 +48,13 @@
         }
     });
 
-    // ── Payment Reference Validation ────────────────────────────
-    paymentRefInput.addEventListener('input', validateForm);
-
     function validateForm() {
-        const hasInstitution = institutionType.value !== '';
-        const hasPaymentRef = paymentRefInput.value.trim().length >= 3;
+        const hasInstitution = institutionType && institutionType.value !== '';
         const hasPhoto = compressedPhotoData !== '';
 
-        submitBtn.disabled = !(hasInstitution && hasPaymentRef && hasPhoto);
+        if (submitBtn) {
+            submitBtn.disabled = !(hasInstitution && hasPhoto);
+        }
     }
 
     // ── Loading Overlay ─────────────────────────────────────────
@@ -173,15 +88,9 @@
         e.preventDefault();
 
         const email = document.getElementById('email').value.trim().toLowerCase();
-        const paymentRef = paymentRefInput.value.trim();
 
         if (!compressedPhotoData) {
             showToast('Please upload a photo', 'error');
-            return;
-        }
-
-        if (!paymentRef || paymentRef.length < 3) {
-            showToast('Please enter a valid payment reference number', 'error');
             return;
         }
 
@@ -203,7 +112,6 @@
             showLoading('Submitting your registration...');
 
             const type = institutionType.value;
-            const fee = feeMap[type] ? feeMap[type].value : 0;
 
             // Calculate validity: Valid until May 31st of next academic year
             const today = new Date();
@@ -231,8 +139,6 @@
                 gender: document.getElementById('gender').value,
                 bloodGroup: document.getElementById('bloodGroup').value.trim() || 'N/A',
                 photoBase64: compressedPhotoData,
-                feeAmount: fee,
-                paymentRef: paymentRef,
                 status: 'pending_review',
                 membershipId: null,
                 rejectionReason: null,
@@ -253,8 +159,6 @@
             photoPreview.classList.add('hidden');
             photoPreview.src = '';
             compressedPhotoData = '';
-            qrContainer.classList.remove('active');
-            feeAmount.textContent = '₹0';
             submitBtn.disabled = true;
 
             // Scroll to status check section
@@ -262,6 +166,7 @@
                 document.getElementById('status-check').scrollIntoView({ behavior: 'smooth' });
             }, 2000);
 
+        } catch (err) {
         } catch (err) {
             hideLoading();
             console.error('Registration error:', err);
@@ -383,10 +288,6 @@
                     <div class="status-detail-item">
                         <span class="sdl">Registered On</span>
                         <span class="sdv">${member.createdAt ? formatDate(member.createdAt) : 'N/A'}</span>
-                    </div>
-                    <div class="status-detail-item">
-                        <span class="sdl">Payment Ref</span>
-                        <span class="sdv">${escHtml(member.paymentRef || 'N/A')}</span>
                     </div>
                     ${member.membershipId ? `
                     <div class="status-detail-item full-width">
