@@ -167,7 +167,8 @@
                                     <div class="form-group">
                                         <label for="email">Email Address *</label>
                                         <input type="email" id="email" name="email" required
-                                            placeholder="Enter your email">
+                                            placeholder="Enter your email (e.g., name@gmail.com)"
+                                            pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$">
                                     </div>
 
                                     <div class="form-group">
@@ -181,14 +182,14 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="bloodGroup">Blood Group</label>
-                                        <input type="text" id="bloodGroup" name="bloodGroup" placeholder="e.g., O+">
+                                        <label for="bloodGroup">Blood Group *</label>
+                                        <input type="text" id="bloodGroup" name="bloodGroup" required placeholder="e.g., O+">
                                     </div>
 
                                     <div class="form-group">
                                         <label for="phone">Phone Number *</label>
                                         <input type="tel" id="phone" name="phone" required
-                                            placeholder="Enter 10-digit mobile number" pattern="[0-9]{10}">
+                                            placeholder="Enter 10-digit mobile number" pattern="[0-9]{10}" maxlength="10">
                                     </div>
 
                                     <div class="form-group">
@@ -203,7 +204,7 @@
                                                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                                     <polyline points="21 15 16 10 5 21"></polyline>
                                                 </svg>
-                                                <span>Click to upload photo</span>
+                                                <span>Upload Your Image</span>
                                             </div>
                                             <img id="photoPreview" src="" alt="Photo Preview"
                                                 class="photo-preview hidden">
@@ -213,8 +214,7 @@
                             </div>
 
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary submit-btn" id="submit-btn"
-                                    disabled>Register & Submit</button>
+                                <button type="submit" class="btn btn-primary submit-btn" id="submit-btn">Register & Submit</button>
                             </div>
                         </form>
                     </div>
