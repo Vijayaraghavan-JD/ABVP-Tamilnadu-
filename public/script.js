@@ -102,22 +102,63 @@
         setInterval(nextSlide, slideInterval);
     }
 
-    // ── Photo Upload Preview & Base64 Generation ────────────────
+    // ── Photo Upload Preview & Base64 Compression ───────────────
+    function compressImageFile(file, maxDimension = 600, quality = 0.75) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxDimension || height > maxDimension) {
+                        if (width > height) {
+                            height = Math.round((height * maxDimension) / width);
+                            width = maxDimension;
+                        } else {
+                            width = Math.round((width * maxDimension) / height);
+                            height = maxDimension;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    resolve(dataUrl);
+                };
+                img.onerror = function (err) {
+                    reject(err);
+                };
+                img.src = e.target.result;
+            };
+            reader.onerror = function (err) {
+                reject(err);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
     if (photoInput) {
-        photoInput.addEventListener('change', function (e) {
+        photoInput.addEventListener('change', async function (e) {
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    compressedPhotoData = event.target.result;
+                try {
+                    compressedPhotoData = await compressImageFile(file, 600, 0.75);
                     if (photoPreview) {
                         photoPreview.src = compressedPhotoData;
                         photoPreview.classList.remove('hidden');
                     }
                     const cardPhotoEl = document.getElementById('card-photo');
                     if (cardPhotoEl) cardPhotoEl.src = compressedPhotoData;
-                };
-                reader.readAsDataURL(file);
+                } catch (err) {
+                    console.error('Image compression error:', err);
+                    showToast('Failed to process image file', 'error');
+                }
             }
         });
     }
