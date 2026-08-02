@@ -104,31 +104,20 @@
 
     // ── Photo Upload Preview & Base64 Generation ────────────────
     if (photoInput) {
-        photoInput.addEventListener('change', async function (e) {
+        photoInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
-                try {
-                    compressedPhotoData = await compressImage(file, 400, 500, 0.7);
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    compressedPhotoData = event.target.result;
                     if (photoPreview) {
                         photoPreview.src = compressedPhotoData;
                         photoPreview.classList.remove('hidden');
                     }
                     const cardPhotoEl = document.getElementById('card-photo');
                     if (cardPhotoEl) cardPhotoEl.src = compressedPhotoData;
-                } catch (err) {
-                    console.error('Image compression fallback:', err);
-                    const reader = new FileReader();
-                    reader.onload = function (event) {
-                        compressedPhotoData = event.target.result;
-                        if (photoPreview) {
-                            photoPreview.src = compressedPhotoData;
-                            photoPreview.classList.remove('hidden');
-                        }
-                        const cardPhotoEl = document.getElementById('card-photo');
-                        if (cardPhotoEl) cardPhotoEl.src = compressedPhotoData;
-                    };
-                    reader.readAsDataURL(file);
-                }
+                };
+                reader.readAsDataURL(file);
             }
         });
     }
@@ -188,13 +177,18 @@
             showLoading('Checking for existing registration...');
 
             try {
-                // Check if email is already registered
-                const existingQuery = await db.collection('members')
-                    .where('email', '==', email)
-                    .limit(1)
-                    .get();
+                // Fetch members collection to check for existing email (index-independent)
+                const snapshot = await db.collection('members').get();
+                let alreadyRegistered = false;
 
-                if (!existingQuery.empty) {
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.email && data.email.toLowerCase() === email) {
+                        alreadyRegistered = true;
+                    }
+                });
+
+                if (alreadyRegistered) {
                     hideLoading();
                     showToast('This email is already registered. Use "Check Status" to view your registration.', 'error');
                     return;
@@ -259,7 +253,7 @@
             } catch (err) {
                 hideLoading();
                 console.error('Registration error:', err);
-                showToast('Registration failed. Please try again.', 'error');
+                showToast('Registration failed: ' + (err.message || 'Please try again'), 'error');
             }
         });
     }
@@ -288,26 +282,26 @@
         }
 
         try {
-            const snapshot = await db.collection('members')
-                .where('email', '==', email)
-                .limit(1)
-                .get();
+            // Index-independent query matching all documents
+            const snapshot = await db.collection('members').get();
+            let foundMember = null;
 
-            if (snapshot.empty) {
-                showStatusResult('not_found');
-                if (checkStatusBtn) {
-                    checkStatusBtn.disabled = false;
-                    checkStatusBtn.textContent = 'Check Status';
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.email && data.email.toLowerCase() === email) {
+                    foundMember = data;
                 }
-                return;
-            }
+            });
 
-            const member = snapshot.docs[0].data();
-            showStatusResult(member.status, member);
+            if (!foundMember) {
+                showStatusResult('not_found');
+            } else {
+                showStatusResult(foundMember.status, foundMember);
+            }
 
         } catch (err) {
             console.error('Status check error:', err);
-            showToast('Error checking status. Please try again.', 'error');
+            showToast('Error checking status: ' + (err.message || 'Please try again'), 'error');
         }
 
         if (checkStatusBtn) {
