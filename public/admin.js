@@ -270,7 +270,7 @@
         let members = filter ? filter : allMembers;
 
         if (members.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="12" class="empty-row">No members found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" class="empty-row">No members found</td></tr>';
             return;
         }
 
@@ -342,7 +342,6 @@
                     </div>
                     <div class="pcd-item">
                         <span class="pcd-label">Course</span>
-                        <span class="pcd-value">${escHtml(m.courseDetails || '-')}</span>
                         <span class="pcd-value">${escHtml(m.courseDetails || '-')}</span>
                     </div>
                     <div class="pcd-item">
@@ -452,6 +451,7 @@
     window.approveMember = async function () {
         if (!currentMemberDocId) return;
 
+        const member = allMembers.find(m => m.id === currentMemberDocId);
         const validityDateInput = document.getElementById('validity-date').value;
 
         if (!validityDateInput) {
@@ -479,8 +479,13 @@
                 reviewedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
+            // Send automatic approval notifications (Email + SMS/WhatsApp)
+            if (member) {
+                sendApprovalNotifications(member);
+            }
+
             closeMemberModal();
-            showAdminToast('Member approved! Valid until: ' + validityDateInput);
+            showAdminToast('Member approved! Notification sent to ' + (member ? member.fullName : 'member'));
 
         } catch (err) {
             console.error('Approval error:', err);
@@ -490,6 +495,92 @@
         btn.disabled = false;
         btn.textContent = '✓ Approve & Activate';
     };
+
+    // ── Send Automatic Approval Notifications (Email + SMS/WhatsApp) ──────
+    async function sendApprovalNotifications(member) {
+        if (!member) return;
+
+        const downloadLink = window.location.origin + window.location.pathname.replace('admin.html', '') + 'index.html#status-check';
+        const memberName = member.fullName || 'Member';
+        const phone = (member.phone || '').replace(/[^0-9]/g, '');
+
+        const messageText = `Dear ${memberName}, Congratulations! Your ABVP Membership has been approved successfully. Download your Membership Card here: ${downloadLink} - ABVP Tamilnadu`;
+
+        // 1. Email Notification
+        if (member.email) {
+            sendApprovalEmail(member);
+        }
+
+        // 2. Fast2SMS API Gateway (If API Key is provided)
+        if (phone.length >= 10 && window.FAST2SMS_API_KEY) {
+            try {
+                await fetch('https://www.fast2sms.com/dev/bulkV2', {
+                    method: 'POST',
+                    headers: {
+                        'authorization': window.FAST2SMS_API_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        route: 'q',
+                        message: messageText,
+                        language: 'english',
+                        flash: 0,
+                        numbers: phone.slice(-10)
+                    })
+                });
+                console.log('Background SMS sent via Fast2SMS to:', phone);
+            } catch (smsErr) {
+                console.warn('Fast2SMS gateway status:', smsErr);
+            }
+        }
+
+        // 3. WhatsApp 1-Click Messaging
+        if (phone.length >= 10) {
+            const cleanPhone = phone.length === 10 ? '91' + phone : phone;
+            const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(messageText)}`;
+            setTimeout(() => {
+                window.open(waUrl, '_blank');
+            }, 300);
+        }
+    }
+
+    async function sendApprovalEmail(member) {
+        if (!member || !member.email) return;
+
+        const downloadLink = window.location.origin + window.location.pathname.replace('admin.html', '') + 'index.html#status-check';
+        const memberName = member.fullName || 'Member';
+
+        const subject = "ABVP Tamil Nadu — Membership Approved!";
+        const bodyMessage = `Dear ${memberName},\n\nCongratulations!\n\nYour ABVP Membership has been approved successfully.\n\nYou can download your Membership Card using the link below.\n\nDownload Card:\n${downloadLink}\n\nRegards,\nABVP Tamilnadu`;
+
+        let sentViaEmailJS = false;
+
+        if (typeof emailjs !== 'undefined' && window.EMAILJS_PUBLIC_KEY && window.EMAILJS_SERVICE_ID && window.EMAILJS_TEMPLATE_ID) {
+            try {
+                emailjs.init(window.EMAILJS_PUBLIC_KEY);
+                await emailjs.send(
+                    window.EMAILJS_SERVICE_ID,
+                    window.EMAILJS_TEMPLATE_ID,
+                    {
+                        to_name: memberName,
+                        to_email: member.email,
+                        download_link: downloadLink,
+                        message: bodyMessage
+                    }
+                );
+                sentViaEmailJS = true;
+                console.log('Approval email sent via EmailJS to:', member.email);
+            } catch (err) {
+                console.warn('EmailJS error, falling back to mailto:', err);
+            }
+        }
+
+        // Fallback: If EmailJS is not configured or failed, open mail client pre-filled with the exact message
+        if (!sentViaEmailJS) {
+            const mailtoUrl = `mailto:${encodeURIComponent(member.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyMessage)}`;
+            window.open(mailtoUrl, '_blank');
+        }
+    }
 
     // ── Reject Member ───────────────────────────────────────────
     window.rejectMember = async function () {

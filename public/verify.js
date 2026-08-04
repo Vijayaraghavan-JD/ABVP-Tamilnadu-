@@ -1,6 +1,6 @@
 // ============================================================
 // Verify.js — ABVP Tamil Nadu Membership Verification
-// Reads membership ID from URL, queries Firestore, shows result
+// Reads membership ID/email/docId from URL, queries Firestore, shows result
 // ============================================================
 
 (function () {
@@ -12,106 +12,151 @@
     const validState = document.getElementById('valid-state');
     const invalidState = document.getElementById('invalid-state');
 
-    // Parse membership ID from URL
+    // Parse ID from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
-    const membershipId = urlParams.get('id');
+    const searchId = urlParams.get('id');
 
-    /**
-     * Show a specific state, hide all others
-     */
     function showState(stateEl) {
         [loadingState, noIdState, validState, invalidState].forEach(el => {
-            el.classList.add('hidden');
+            if (el) el.classList.add('hidden');
         });
-        stateEl.classList.remove('hidden');
+        if (stateEl) stateEl.classList.remove('hidden');
     }
 
-    /**
-     * Verify membership against Firestore
-     */
     async function verifyMembership() {
-        if (!membershipId || membershipId.trim() === '') {
+        if (!searchId || searchId.trim() === '') {
             showState(noIdState);
             return;
         }
 
-        try {
-            // Query Firestore for active member with this membership ID
-            const snapshot = await db.collection('members')
-                .where('membershipId', '==', membershipId.trim())
-                .where('status', '==', 'active')
-                .limit(1)
-                .get();
+        const cleanId = searchId.trim().toLowerCase();
 
-            if (snapshot.empty) {
+        try {
+            // Index-independent query across members collection
+            const snapshot = await db.collection('members').get();
+            let foundMember = null;
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const memId = (data.membershipId || '').toLowerCase();
+                const memEmail = (data.email || '').toLowerCase();
+                const docId = doc.id.toLowerCase();
+
+                if (memId === cleanId || memEmail === cleanId || docId === cleanId) {
+                    foundMember = data;
+                }
+            });
+
+            if (!foundMember) {
+                document.getElementById('invalid-reason').textContent = 'No registration record was found for this code or URL. Please verify the QR code.';
                 showState(invalidState);
                 return;
             }
 
-            // Found a valid active member
-            const member = snapshot.docs[0].data();
+            // Check member status
+            if (foundMember.status === 'pending_review') {
+                document.getElementById('invalid-reason').textContent = 'This membership application has been submitted and is currently pending review/approval by the Admin.';
+                showState(invalidState);
+                return;
+            }
 
-            // Check validity date
+            if (foundMember.status === 'rejected') {
+                document.getElementById('invalid-reason').textContent = foundMember.rejectionReason
+                    ? `This registration was rejected by Admin. Reason: ${foundMember.rejectionReason}`
+                    : 'This membership registration was rejected by Admin.';
+                showState(invalidState);
+                return;
+            }
+
+            if (foundMember.status !== 'active') {
+                document.getElementById('invalid-reason').textContent = 'This membership status is invalid or inactive.';
+                showState(invalidState);
+                return;
+            }
+
+            // Check validity date for active members
             const today = new Date();
-            let isValid = true;
-            let validityStatus = 'Valid';
-            let validityClass = 'validity-valid';
+            let isExpired = false;
 
-            if (member.validUntil) {
-                const validUntilDate = member.validUntil.toDate ? member.validUntil.toDate() : new Date(member.validUntil);
+            if (foundMember.validUntil) {
+                const validUntilDate = foundMember.validUntil.toDate ? foundMember.validUntil.toDate() : new Date(foundMember.validUntil);
                 if (today > validUntilDate) {
-                    isValid = false;
-                    validityStatus = 'Expired';
-                    validityClass = 'validity-expired';
+                    isExpired = true;
+                    document.getElementById('invalid-reason').textContent = `This membership expired on ${formatDate(validUntilDate)}.`;
                 }
             }
 
-            // If expired, show invalid state instead
-            if (!isValid) {
-                document.getElementById('invalid-reason').textContent = `This membership expired on ${formatDate(member.validUntil)}`;
+            if (isExpired) {
                 showState(invalidState);
                 return;
             }
 
-            // Populate the valid state
-            document.getElementById('v-name').textContent = member.fullName || 'N/A';
-            document.getElementById('v-institution').textContent = member.institutionType || 'N/A';
-            document.getElementById('v-institution-name').textContent = member.institutionName || 'N/A';
-            document.getElementById('v-course-details').textContent = member.courseDetails || 'N/A';
-            document.getElementById('v-district').textContent = member.district || 'N/A';
-            document.getElementById('v-id').textContent = member.membershipId;
+            // Member is active and valid! Populate verified state
+            const elName = document.getElementById('v-name');
+            const elInst = document.getElementById('v-institution');
+            const elInstName = document.getElementById('v-institution-name');
+            const elCourse = document.getElementById('v-course-details');
+            const elDistrict = document.getElementById('v-district');
+            const elPhoto = document.getElementById('v-photo');
+            const elSince = document.getElementById('v-since');
+            const elValidity = document.getElementById('v-validity');
+            const elStatus = document.getElementById('v-validity-status');
 
-            // Validity information
-            if (member.validUntil) {
-                const validUntilDate = member.validUntil.toDate ? member.validUntil.toDate() : new Date(member.validUntil);
-                document.getElementById('v-validity').textContent = formatDate(validUntilDate);
-                document.getElementById('v-validity-status').textContent = validityStatus;
-                document.getElementById('v-validity-status').className = `validity-badge ${validityClass}`;
+            if (elName) elName.textContent = foundMember.fullName || 'N/A';
+            if (elInst) elInst.textContent = foundMember.institutionType || 'N/A';
+            if (elInstName) elInstName.textContent = foundMember.institutionName || foundMember.collegeName || 'N/A';
+            if (elCourse) elCourse.textContent = foundMember.courseDetails || 'N/A';
+            if (elDistrict) elDistrict.textContent = foundMember.district || 'N/A';
+
+            if (foundMember.photoBase64 && elPhoto) {
+                elPhoto.src = foundMember.photoBase64;
+                elPhoto.style.display = 'inline-block';
+            } else if (elPhoto) {
+                elPhoto.style.display = 'none';
             }
 
-            // Photo
-            const photoEl = document.getElementById('v-photo');
-            if (member.photoBase64) {
-                photoEl.src = member.photoBase64;
-            } else {
-                photoEl.style.display = 'none';
+            if (elValidity && foundMember.validUntil) {
+                const validUntilDate = foundMember.validUntil.toDate ? foundMember.validUntil.toDate() : new Date(foundMember.validUntil);
+                elValidity.textContent = formatDate(validUntilDate);
             }
 
-            // Member since date
-            const sinceEl = document.getElementById('v-since');
-            if (member.reviewedAt) {
-                sinceEl.textContent = formatDate(member.reviewedAt);
-            } else if (member.createdAt) {
-                sinceEl.textContent = formatDate(member.createdAt);
-            } else {
-                sinceEl.textContent = 'N/A';
+            if (elStatus) {
+                elStatus.textContent = 'Active / Valid';
+                elStatus.style.color = '#10B981';
+                elStatus.style.fontWeight = 'bold';
+            }
+
+            if (elSince) {
+                if (foundMember.reviewedAt) {
+                    elSince.textContent = formatDate(foundMember.reviewedAt);
+                } else if (foundMember.createdAt) {
+                    elSince.textContent = formatDate(foundMember.createdAt);
+                } else {
+                    elSince.textContent = 'N/A';
+                }
             }
 
             showState(validState);
 
         } catch (err) {
             console.error('Verification error:', err);
+            document.getElementById('invalid-reason').textContent = 'An error occurred while verifying the membership. Please try again.';
             showState(invalidState);
+        }
+    }
+
+    function formatDate(ts) {
+        if (!ts) return 'N/A';
+        try {
+            const d = ts.toDate ? ts.toDate() : new Date(ts);
+            if (isNaN(d.getTime())) return 'N/A';
+            return d.toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        } catch (e) {
+            return 'N/A';
         }
     }
 

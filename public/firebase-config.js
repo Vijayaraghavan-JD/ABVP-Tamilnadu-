@@ -1,7 +1,14 @@
 // ============================================================
-// Firebase Configuration — ABVP Tamil Nadu
+// Firebase & EmailJS Configuration — ABVP Tamil Nadu
 // Shared across all pages (index, admin, verify)
 // ============================================================
+
+// Optional EmailJS & SMS Keys (for background automated sending):
+// If left empty, admin panel automatically triggers pre-filled 1-click WhatsApp/SMS & Email upon approval.
+window.EMAILJS_PUBLIC_KEY = ""; 
+window.EMAILJS_SERVICE_ID = ""; 
+window.EMAILJS_TEMPLATE_ID = ""; 
+window.FAST2SMS_API_KEY = ""; 
 
 const firebaseConfig = {
     apiKey: "AIzaSyAKAFimi8k0C4fEfQWWhoOAaA4RghredGA",

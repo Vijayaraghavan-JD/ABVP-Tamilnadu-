@@ -105,62 +105,52 @@
     // ── Photo Upload Preview & Base64 Compression ───────────────
     function compressImageFile(file, maxDimension = 500, quality = 0.7) {
         return new Promise((resolve, reject) => {
-            if (!file) return reject(new Error('No file provided'));
+            if (!file) return resolve('');
 
-            const processImg = (imgSource, isObjectUrl = false) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
                 const img = new Image();
                 img.onload = function () {
-                    if (isObjectUrl) URL.revokeObjectURL(imgSource);
-                    let width = img.width;
-                    let height = img.height;
+                    try {
+                        let width = img.width || 300;
+                        let height = img.height || 300;
 
-                    if (width > maxDimension || height > maxDimension) {
-                        if (width > height) {
-                            height = Math.round((height * maxDimension) / width);
-                            width = maxDimension;
-                        } else {
-                            width = Math.round((width * maxDimension) / height);
-                            height = maxDimension;
+                        if (width > maxDimension || height > maxDimension) {
+                            if (width > height) {
+                                height = Math.round((height * maxDimension) / width);
+                                width = maxDimension;
+                            } else {
+                                width = Math.round((width * maxDimension) / height);
+                                height = maxDimension;
+                            }
                         }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, width, height);
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        resolve(dataUrl);
+                    } catch (err) {
+                        console.warn('Canvas compression fallback:', err);
+                        resolve(e.target.result);
                     }
-
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                    resolve(dataUrl);
                 };
-                img.onerror = function (err) {
-                    if (isObjectUrl) URL.revokeObjectURL(imgSource);
-                    fallbackFileReader();
+                img.onerror = function () {
+                    // Fallback to raw base64 dataUrl if canvas image object load fails
+                    resolve(e.target.result);
                 };
-                img.src = imgSource;
+                img.src = e.target.result;
             };
-
-            const fallbackFileReader = () => {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    processImg(e.target.result, false);
-                };
-                reader.onerror = function (err) {
-                    reject(err);
-                };
-                reader.readAsDataURL(file);
+            reader.onerror = function (err) {
+                console.error('FileReader error:', err);
+                reject(new Error('Failed to read image file'));
             };
-
-            try {
-                if (window.URL && window.URL.createObjectURL) {
-                    const objectUrl = URL.createObjectURL(file);
-                    processImg(objectUrl, true);
-                } else {
-                    fallbackFileReader();
-                }
-            } catch (e) {
-                fallbackFileReader();
-            }
+            reader.readAsDataURL(file);
         });
     }
 
@@ -168,42 +158,9 @@
         let photoData = currentBase64;
         if (file) {
             try {
-                photoData = await compressImageFile(file, 450, 0.65);
+                photoData = await compressImageFile(file, 500, 0.7);
             } catch (err) {
-                console.warn('Mobile compression retry:', err);
-            }
-        }
-
-        if (photoData && photoData.length > 350000) {
-            try {
-                const img = new Image();
-                await new Promise((res) => {
-                    img.onload = res;
-                    img.onerror = res;
-                    img.src = photoData;
-                });
-                if (img.width && img.height) {
-                    const canvas = document.createElement('canvas');
-                    const maxDim = 350;
-                    let width = img.width;
-                    let height = img.height;
-                    if (width > maxDim || height > maxDim) {
-                        if (width > height) {
-                            height = Math.round((height * maxDim) / width);
-                            width = maxDim;
-                        } else {
-                            width = Math.round((width * maxDim) / height);
-                            height = maxDim;
-                        }
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    photoData = canvas.toDataURL('image/jpeg', 0.5);
-                }
-            } catch (e) {
-                console.warn('Secondary reduction failed:', e);
+                console.warn('Compression retry:', err);
             }
         }
         return photoData;
@@ -222,8 +179,8 @@
                     const cardPhotoEl = document.getElementById('card-photo');
                     if (cardPhotoEl) cardPhotoEl.src = compressedPhotoData;
                 } catch (err) {
-                    console.error('Image compression error:', err);
-                    showToast('Failed to process image file', 'error');
+                    console.error('Image upload error:', err);
+                    showToast('Failed to process image. Please try another image.', 'error');
                 }
             }
         });
@@ -272,7 +229,13 @@
             const blood = document.getElementById('bloodGroup').value.trim();
 
             const uploadedFile = photoInput && photoInput.files ? photoInput.files[0] : null;
-            compressedPhotoData = await ensureSmallPhotoData(uploadedFile, compressedPhotoData);
+            if (!compressedPhotoData && uploadedFile) {
+                try {
+                    compressedPhotoData = await compressImageFile(uploadedFile, 500, 0.7);
+                } catch (err) {
+                    console.warn('Fast photo compression error:', err);
+                }
+            }
 
             if (!compressedPhotoData) {
                 showToast('Please upload your photo', 'error');
@@ -284,27 +247,32 @@
                 return;
             }
 
-            showLoading('Checking for existing registration...');
+            showLoading('Submitting your registration...');
 
             try {
-                // Fetch members collection to check for existing email (index-independent)
-                const snapshot = await db.collection('members').get();
+                // Fast email check using indexed single-field query with fallback
                 let alreadyRegistered = false;
-
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data.email && data.email.toLowerCase() === email) {
+                try {
+                    const checkSnap = await db.collection('members').where('email', '==', email).limit(1).get();
+                    if (!checkSnap.empty) {
                         alreadyRegistered = true;
                     }
-                });
+                } catch (e) {
+                    // Fallback to full fetch if index query encounters any restriction
+                    const snapshot = await db.collection('members').get();
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.email && data.email.toLowerCase() === email) {
+                            alreadyRegistered = true;
+                        }
+                    });
+                }
 
                 if (alreadyRegistered) {
                     hideLoading();
                     showToast('This email is already registered. Use "Check Status" to view your registration.', 'error');
                     return;
                 }
-
-                showLoading('Submitting your registration...');
 
                 // Academic year validity date (May 31st)
                 const today = new Date();
@@ -340,11 +308,11 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
-                // Add to Firestore collection
+                // Fast add to Firestore collection
                 await db.collection('members').add(memberData);
 
                 hideLoading();
-                showToast('Registration submitted successfully! Your application is under review.', 'success');
+                showToast('Registration submitted successfully! Your application is under review by Admin.', 'success');
 
                 // Reset form & photo preview
                 membershipForm.reset();
@@ -354,11 +322,11 @@
                 }
                 compressedPhotoData = '';
 
-                // Scroll down to Check Status section after 2 seconds
+                // Scroll down to Check Status section after 1.5 seconds
                 setTimeout(() => {
                     const statusSec = document.getElementById('status-check');
                     if (statusSec) statusSec.scrollIntoView({ behavior: 'smooth' });
-                }, 2000);
+                }, 1500);
 
             } catch (err) {
                 hideLoading();
@@ -494,11 +462,6 @@
                         <span class="sdl">Registered On</span>
                         <span class="sdv">${member.createdAt ? formatDate(member.createdAt) : 'N/A'}</span>
                     </div>
-                    ${member.membershipId ? `
-                    <div class="status-detail-item full-width">
-                        <span class="sdl">Membership ID</span>
-                        <span class="sdv membership-id-highlight">${escHtml(member.membershipId)}</span>
-                    </div>` : ''}
                 </div>
             `;
         }
@@ -552,18 +515,26 @@
         if (elGender) elGender.textContent = member.gender;
         if (elBlood) elBlood.textContent = member.bloodGroup || 'N/A';
         if (elPhone) elPhone.textContent = member.phone;
-        if (elId) elId.textContent = member.membershipId || 'N/A';
+        if (elId) elId.textContent = member.membershipId || member.email || '';
 
         const elPhoto = document.getElementById('card-photo');
-        if (member.photoBase64 && elPhoto) {
-            elPhoto.src = member.photoBase64;
+        const photoBox = document.querySelector('.member-photo-box');
+        if (member.photoBase64) {
+            if (elPhoto) elPhoto.src = member.photoBase64;
+            if (photoBox) {
+                photoBox.style.backgroundImage = `url("${member.photoBase64}")`;
+                photoBox.style.backgroundSize = 'cover';
+                photoBox.style.backgroundPosition = 'center';
+                photoBox.style.backgroundRepeat = 'no-repeat';
+            }
         }
 
         const qrContainer = document.getElementById('card-qr-code');
         if (qrContainer) {
             qrContainer.innerHTML = '';
-            if (member.membershipId && typeof QRCode !== 'undefined') {
-                const verifyUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 'verify.html?id=' + encodeURIComponent(member.membershipId);
+            const lookupKey = member.membershipId || member.email;
+            if (lookupKey && typeof QRCode !== 'undefined') {
+                const verifyUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 'verify.html?id=' + encodeURIComponent(lookupKey);
                 new QRCode(qrContainer, {
                     text: verifyUrl,
                     width: 80,
@@ -597,6 +568,25 @@
         });
     }
 
+    function setupClonedCardForDownload(clonedDoc) {
+        const clonedCard = clonedDoc.getElementById('membership-card-render');
+        if (clonedCard) {
+            clonedCard.style.width = '900px';
+            clonedCard.style.height = '506.25px';
+            clonedCard.style.maxWidth = 'none';
+            clonedCard.style.transform = 'none';
+        }
+        const clonedPhotoBox = clonedDoc.querySelector('.member-photo-box');
+        const clonedPhotoImg = clonedDoc.getElementById('card-photo');
+        if (clonedPhotoBox && clonedPhotoImg && clonedPhotoImg.src) {
+            clonedPhotoBox.style.backgroundImage = `url("${clonedPhotoImg.src}")`;
+            clonedPhotoBox.style.backgroundSize = 'cover';
+            clonedPhotoBox.style.backgroundPosition = 'center';
+            clonedPhotoBox.style.backgroundRepeat = 'no-repeat';
+            clonedPhotoImg.style.display = 'none';
+        }
+    }
+
     async function downloadCardAsImage() {
         if (!downloadImgBtn || !cardToRender) return;
         const originalText = downloadImgBtn.innerHTML;
@@ -610,13 +600,7 @@
                 backgroundColor: '#ffffff',
                 logging: false,
                 windowWidth: 1000,
-                onclone: (clonedDoc) => {
-                    const clonedCard = clonedDoc.getElementById('membership-card-render');
-                    if (clonedCard) {
-                        clonedCard.style.width = '900px';
-                        clonedCard.style.maxWidth = '900px';
-                    }
-                }
+                onclone: setupClonedCardForDownload
             });
             const imgData = canvas.toDataURL('image/png');
             const link = document.createElement('a');
@@ -648,13 +632,7 @@
                 backgroundColor: '#ffffff',
                 logging: false,
                 windowWidth: 1000,
-                onclone: (clonedDoc) => {
-                    const clonedCard = clonedDoc.getElementById('membership-card-render');
-                    if (clonedCard) {
-                        clonedCard.style.width = '900px';
-                        clonedCard.style.maxWidth = '900px';
-                    }
-                }
+                onclone: setupClonedCardForDownload
             });
 
             const { jsPDF } = window.jspdf;
