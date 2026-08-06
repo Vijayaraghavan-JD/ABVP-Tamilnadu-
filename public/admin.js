@@ -553,9 +553,32 @@
         const subject = "ABVP Tamil Nadu — Membership Approved!";
         const bodyMessage = `Dear ${memberName},\n\nCongratulations!\n\nYour ABVP Membership has been approved successfully.\n\nYou can download your Membership Card using the link below.\n\nDownload Card:\n${downloadLink}\n\nRegards,\nABVP Tamilnadu`;
 
-        let sentViaEmailJS = false;
+        let sentEmail = false;
 
-        if (typeof emailjs !== 'undefined' && window.EMAILJS_PUBLIC_KEY && window.EMAILJS_SERVICE_ID && window.EMAILJS_TEMPLATE_ID) {
+        // 1. Try Google Apps Script Web App first
+        if (window.GOOGLE_SCRIPT_URL) {
+            try {
+                await fetch(window.GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Using no-cors to prevent preflight errors and guarantee execution
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify({
+                        to: member.email,
+                        subject: subject,
+                        body: bodyMessage
+                    })
+                });
+                sentEmail = true;
+                console.log('Approval email sent via Google Apps Script to:', member.email);
+            } catch (err) {
+                console.warn('Google Apps Script email error:', err);
+            }
+        }
+
+        // 2. Fallback: EmailJS
+        if (!sentEmail && typeof emailjs !== 'undefined' && window.EMAILJS_PUBLIC_KEY && window.EMAILJS_SERVICE_ID && window.EMAILJS_TEMPLATE_ID) {
             try {
                 emailjs.init(window.EMAILJS_PUBLIC_KEY);
                 await emailjs.send(
@@ -568,15 +591,15 @@
                         message: bodyMessage
                     }
                 );
-                sentViaEmailJS = true;
+                sentEmail = true;
                 console.log('Approval email sent via EmailJS to:', member.email);
             } catch (err) {
                 console.warn('EmailJS error, falling back to mailto:', err);
             }
         }
 
-        // Fallback: If EmailJS is not configured or failed, open mail client pre-filled with the exact message
-        if (!sentViaEmailJS) {
+        // 3. Fallback: If both background methods failed/unconfigured, open mail client
+        if (!sentEmail) {
             const mailtoUrl = `mailto:${encodeURIComponent(member.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyMessage)}`;
             window.open(mailtoUrl, '_blank');
         }

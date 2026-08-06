@@ -9,6 +9,7 @@ window.EMAILJS_PUBLIC_KEY = "";
 window.EMAILJS_SERVICE_ID = ""; 
 window.EMAILJS_TEMPLATE_ID = ""; 
 window.FAST2SMS_API_KEY = ""; 
+window.GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby64efA5dc1RUWYsi_LHkEgyiWrkxbeCUjIgGqd6aN_WwACyEFsoPQ7W3LUUBTpEnOV/exec"; 
 
 const firebaseConfig = {
     apiKey: "AIzaSyAKAFimi8k0C4fEfQWWhoOAaA4RghredGA",
